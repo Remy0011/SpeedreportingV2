@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const option = document.createElement("option");
         option.value = day.index;
         option.dataset.date = day.dateStr;
-        option.textContent = `${day.label} (${day.dateStr})`;
+        option.textContent = `${day.label} (${day.displayStr})`;
         daySelector.appendChild(option);
       }
     }
@@ -66,6 +66,7 @@ function getCurrentWeekDates() {
     return {
       label,
       index: i + 1,
+      displayStr: `${dd}-${mm}-${yyyy}`,
       dateStr: `${yyyy}-${mm}-${dd}`,
     };
   });
@@ -89,7 +90,7 @@ function loadHoursEntryForm() {
     const option = document.createElement("option");
     option.value = day.index;
     option.dataset.date = day.dateStr;
-    option.textContent = `${day.label} (${day.dateStr})`;
+    option.textContent = `${day.label} (${day.displayStr})`;
     daySelector.appendChild(option);
   }
 

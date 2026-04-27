@@ -93,7 +93,8 @@ abstract class BaseModel {
     public function getCreation(bool $raw = false): string|null
     {
         if (!is_null($this->creation)) {
-            return $raw ? $this->creation : htmlspecialchars($this->creation);
+            $value = (new \DateTime($this->creation))->format('d/m/Y');
+            return $raw ? $value : htmlspecialchars($value);
         }
         return null;
     }
