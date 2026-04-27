@@ -1,0 +1,12 @@
+#work_validate .entry-container {
+    background-color: var(--color-secondary);
+    color: var(--text-dark);
+    padding: 20px;
+    border-radius: var(--radius);
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+html[data-theme="dark"] #work_validate .entry-container {
+    color: var(--text-light);
+}

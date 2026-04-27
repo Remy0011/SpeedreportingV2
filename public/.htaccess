@@ -1,0 +1,18 @@
+# Activer le moteur de réécriture
+RewriteEngine On
+
+# Vérifier si le fichier ou le dossier existe
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rediriger toutes les autres requêtes vers index.php
+RewriteRule ^ index.php [QSA,L]
+
+# Options de sécurité
+# Désactiver l'affichage des répertoires
+Options -Indexes
+
+# Protéger les fichiers sensibles
+<FilesMatch "\.(env|htaccess|ini|log|sh|bak|sql|json|xml|yml|yaml)$">
+    Require all denied
+</FilesMatch>
