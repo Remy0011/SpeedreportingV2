@@ -1,0 +1,211 @@
+/* Button */
+.buttons {
+    margin-top: auto;
+    margin-top: 15px;
+}
+
+.button {
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Primary */
+.button.primary {
+    display: inline-block;
+    background-color: var(--color-primary);
+    color: var(--text-dark);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: background-color var(--t);
+    border: none;
+    transition: var(--t);
+}
+
+.button.primary:hover {
+    background-color: var(--color-primary-t);
+}
+
+.button.primary.minimal {
+    display: inline-block;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: border-color var(--t);
+    border: 2px solid var(--color-primary);
+    transition: var(--t);
+}
+
+.button.primary.minimal:hover {
+    border-color: var(--color-primary-t);;
+    box-shadow: 0 0 5px 2px var(--status-offline);
+}
+
+/* Secondary */
+.button.secondary {
+    display: inline-block;
+    background-color: var(--color-secondary);
+    color: var(--text-dark);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: background-color var(--t);
+    border: none;
+    transition: var(--t);
+}
+
+.button.secondary:hover {
+    background-color: var(--color-secondary-t);
+}
+
+.button.secondary.minimal {
+    display: inline-block;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: border-color var(--t);
+    border: 2px solid var(--color-secondary);
+    transition: var(--t);
+}
+
+.button.secondary.minimal:hover {
+    border-color: var(--color-secondary-t);
+    box-shadow: 0 0 5px 2px var(--status-offline);
+}
+
+/* Success */
+.button.success {
+    display: inline-block;
+    background-color: var(--status-success-bg);
+    color: var(--text-dark);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: background-color var(--t);
+    border: none;
+    transition: var(--t);
+}
+
+.button.success:hover {
+    background-color: var(--status-success);
+}
+
+.button.success.minimal {
+    display: inline-block;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: border-color var(--t);
+    border: 2px solid var(--status-success);
+    transition: var(--t);
+}
+
+.button.success.minimal:hover {
+    border-color: var(--status-success-bg);
+    box-shadow: 0 0 5px 2px var(--status-offline);
+}
+
+/* Danger */
+.button.danger {
+    display: inline-block;
+    background-color: var(--status-danger-bg);
+    color: var(--text-dark);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: background-color var(--t);
+    border: none;
+    transition: var(--t);
+}
+
+.button.danger:hover {
+    background-color: var(--status-danger);
+}
+
+.button.danger.minimal {
+    display: inline-block;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: border-color var(--t);
+    border: 2px solid var(--status-danger-bg);
+    transition: var(--t);
+}
+
+.button.danger.minimal:hover {
+    border-color: var(--status-danger);
+    box-shadow: 0 0 5px 2px var(--status-offline);
+}
+
+.button.contrast {
+    display: inline-block;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: background-color var(--t);
+    border: none;
+    transition: var(--t);
+}
+
+.button.contrast:hover {
+    background-color: var(--bg-light-2);
+}
+
+.tag {
+    color: var(--text-dark);
+    padding: .2rem 0;
+    margin: 0;
+    text-decoration: none;
+    border-radius: var(--radius-full);
+    border: none;
+    text-align: center;
+    min-width: 100px;
+    max-width: 200px;
+    background-color: var(--status-offline);
+}
+
+.tag.success {
+    background-color: var(--status-success);
+}
+
+.tag.danger {
+    background-color: var(--status-danger);
+}
+
+.tag.progress {
+    background-color: var(--status-progress);
+}
+
+.tag.offline {
+    background-color: var(--status-offline);
+}
+
+/* Theme */
+html[data-theme="dark"] .button {
+    color: var(--text-light);
+}
+
+html[data-theme="dark"] .tag {
+    color: var(--text-light);
+}
+
+.button.disabled,
+.button:disabled {
+    background-color: rgba(0, 0, 0, 0.2);
+    cursor: not-allowed;
+}
+
+.button.disabled:hover,
+.button:disabled:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}

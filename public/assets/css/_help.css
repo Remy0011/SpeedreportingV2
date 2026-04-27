@@ -1,0 +1,195 @@
+/* Help */
+.section-help {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    color: var(--text-light);
+}
+
+.section-help.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+
+.section-help .help-container {
+    background-color: var(--bg-light);
+    border-radius: var(--radius);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 1000px;
+    height: 60%;
+    max-height: 90vh;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+}
+
+.section-help .nav-help {
+    display: flex;
+    background-color: var(--bg-light-2);
+    border-bottom: 1px solid var(--color-shadow);
+    padding: 10px;
+    gap: 10px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.section-help .nav-help ul {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 10px;
+}
+
+.section-help .nav-help li {
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    background-color: var(--bg-light);
+    transition: background-color 0.3s;
+    color: var(--text-light);
+}
+
+.section-help .nav-help li:hover {
+    background-color: var(--bg-light-2);
+}
+
+.section-help .help-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.section-help .help-content>div {
+    display: none;
+}
+
+.section-help .help-content>div.active {
+    display: block;
+}
+
+.notice-help,
+.FAQ-help,
+.contact-help {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--text-light);
+}
+
+.section-help .FAQ-help h2 {
+    margin-bottom: 15px;
+}
+
+.section-help .FAQ-help h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-light);
+}
+
+.section-help .FAQ-help ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.section-help .FAQ-help li {
+    background-color: var(--bg-light);
+    border: 1px solid var(--color-shadow);
+    border-radius: var(--radius);
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.section-help .FAQ-help li:hover {
+    background-color: var(--bg-light-2);
+}
+
+.section-help .answer {
+    display: none;
+    margin-top: 10px;
+    font-size: 0.95rem;
+    color: var(--text-light);
+    transition: var(--t);
+}
+
+.section-help .notice-menu {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 10px;
+    margin-bottom: 1rem;
+}
+
+.section-help .notice-tab {
+    padding: 0.4rem 1rem;
+    background: var(--bg-light-2);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--text-light);
+    transition: background-color 0.3s;
+}
+
+.section-help .notice-tab.active {
+    background: var(--color-primary);
+    color: var(--text-light);
+}
+
+.section-help .notice-tab-content {
+    display: none;
+    padding: 1rem;
+    border: 1px solid var(--color-shadow);
+    border-radius: var(--radius);
+}
+
+.contact-help h3,
+.contact-help h3+p {
+    padding: 15px 0;
+}
+
+.section-help .help-container h2 {
+    background-color: var(--bg-pastel);
+    border-radius: 12px;
+    padding: 6px 12px;
+}
+
+/* Media Queries */
+@media (min-width: 769px) {
+    .section-help .help-container {
+        flex-direction: row;
+    }
+
+    .section-help .nav-help {
+        flex-direction: column;
+        border-bottom: none;
+        border-right: 1px solid var(--color-shadow);
+        width: 25%;
+        max-width: 200px;
+        min-width: 150px;
+        padding: 20px 10px;
+    }
+
+    .section-help .nav-help ul {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .section-help .help-content {
+        width: 75%;
+        padding: 30px;
+    }
+}
