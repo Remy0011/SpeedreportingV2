@@ -17,12 +17,13 @@ use Src\Services\CsrfService;
                         id="search"
                         name="search"
                         placeholder="Ex : John"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>">
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
+                        onchange="this.form.submit()">
                 </div>
 
                 <div class="input-container">
                     <label for="status">Statut :</label>
-                    <select id="status" name="status">
+                    <select id="status" name="status" onchange="this.form.submit()">
                         <option value="" <?= ($status === null || $status === '') ? 'selected' : ''; ?>>-- Tous les status --</option>
                         <?php foreach (UserStatus::getEnumOptions() as $value => $label): ?>
                             <option value="<?= $value; ?>" <?= ($status !== null && (string)$status === (string)$value) ? 'selected' : ''; ?>>
@@ -34,7 +35,7 @@ use Src\Services\CsrfService;
                 
                 <div class="input-container">
                     <label for="role_id">Rôle :</label>
-                    <select id="role_id" name="role_id">
+                    <select id="role_id" name="role_id" onchange="this.form.submit()">
                         <option value="" <?= ($role_id === null || $role_id === '') ? 'selected' : ''; ?>>-- Tous les rôles --</option>
                         <?php foreach ($roles as $role): ?>
                             <option value="<?= $role->getId(); ?>" <?= ($role_id == $role->getId()) ? 'selected' : ''; ?>>
@@ -45,10 +46,11 @@ use Src\Services\CsrfService;
                 </div>
 
                 <button type="submit" class="button primary">Filtrer</button>
+                <a href="?">Réinitialiser</a>
             </div>
 
             <div class="container-btn-create">
-                <a href="#" class="button secondary" data-modal="create">Créer</a>
+                <a href="#" data-modal="create">Créer</a>
             </div>
         </div>
     </form>

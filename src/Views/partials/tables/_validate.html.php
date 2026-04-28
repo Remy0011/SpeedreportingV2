@@ -11,12 +11,13 @@ use Src\Models\Enums\Status\WorkStatus;
                 <div class="input-container">
                     <label for="search">Rechercher :</label>
                     <input type="text" id="search" name="search" placeholder="Rechercher par utilisateur"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>">
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>" 
+                        onchange="this.form.submit()">
                 </div>
 
                 <div class="input-container">
                     <label for="project_id">Projet :</label>
-                    <select name="project_id">
+                    <select name="project_id" onchange="this.form.submit()">
                         <option value="">-- Tous les projets --</option>
                         <?php foreach ($projects as $id => $name): ?>
                             <option value="<?= $id ?>" <?= ($_GET['project_id'] ?? '') == $id ? 'selected' : '' ?>>
@@ -28,15 +29,16 @@ use Src\Models\Enums\Status\WorkStatus;
 
                 <div class="input-container">
                     <label for="year">Année :</label>
-                    <input type="number" name="year" placeholder="Par année" value="<?= htmlspecialchars($_GET['year'] ?? '') ?>">
+                    <input type="number" name="year" placeholder="Par année" value="<?= htmlspecialchars($_GET['year'] ?? '') ?>" onchange="this.form.submit()">
                 </div>
 
                 <div class="input-container">
                     <label for="week">Semaine :</label>
-                    <input type="number" name="week" placeholder="Par semaine" value="<?= htmlspecialchars($_GET['week'] ?? '') ?>">
+                    <input type="number" name="week" placeholder="Par semaine" value="<?= htmlspecialchars($_GET['week'] ?? '') ?>" onchange="this.form.submit()">
                 </div>
 
                 <button type="submit" class="button primary">Filtrer</button>
+                <a href="?">Réinitialiser</a>
             </div>
         </div>
     </form>

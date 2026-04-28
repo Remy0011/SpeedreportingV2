@@ -12,12 +12,13 @@ use Src\Models\Enums\Status\WorkStatus;
                 <div class="input-container">
                     <label for="search">Rechercher par utilisateur :</label>
                     <input type="text" id="search" name="search" placeholder="Ex : John"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>">
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
+                        onchange="this.form.submit()">
                 </div>
 
                 <div class="input-container">
                     <label for="project_id">Projets :</label>
-                    <select name="project_id">
+                    <select name="project_id" onchange="this.form.submit()">
                         <option value="">-- Tous les projets --</option>
                         <?php foreach ($projects as $id => $name): ?>
                             <option value="<?= $id ?>" <?= (isset($_GET['project_id']) && $_GET['project_id'] == $id) ? 'selected' : '' ?>>
@@ -30,7 +31,7 @@ use Src\Models\Enums\Status\WorkStatus;
                 <!-- Statut -->
                 <div class="input-container">
                     <label for="status">Statut :</label>
-                    <select id="status" name="status">
+                    <select id="status" name="status" onchange="this.form.submit()">
                         <option value="">-- Tous les status --</option>
                         <?php foreach (WorkStatus::getValues() as $statusVal): ?>
                             <option value="<?= $statusVal ?>" <?= ($status ?? '') === $statusVal ? 'selected' : '' ?>>
@@ -44,18 +45,19 @@ use Src\Models\Enums\Status\WorkStatus;
                 <div class="input-container">
                     <label for="week">Semaine :</label>
                     <input type="number" id="week" name="week" min="1" max="53" placeholder="Ex : 12"
-                        value="<?= htmlspecialchars($week ?? '', ENT_QUOTES); ?>">
+                        value="<?= htmlspecialchars($week ?? '', ENT_QUOTES); ?>" onchange="this.form.submit()">
                 </div>
 
                 <!-- Année -->
                 <div class="input-container">
                     <label for="year">Année :</label>
                     <input type="number" id="year" name="year" min="2000" placeholder="Ex : 2025"
-                        value="<?= htmlspecialchars($year ?? '', ENT_QUOTES); ?>">
+                        value="<?= htmlspecialchars($year ?? '', ENT_QUOTES); ?>" onchange="this.form.submit()">
                 </div>
 
                 <!-- Bouton -->
                 <button type="submit" class="button primary">Filtrer</button>
+                <a href="?">Réinitialiser</a>
             </div>
         </div>
     </form>
