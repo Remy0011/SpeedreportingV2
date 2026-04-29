@@ -12,21 +12,23 @@ use Src\Models\Enums\Status\ProjectStatus;
                 <div class="input-container">
                     <label for="search">Rechercher par nom de projet :</label>
                     <input type="text" id="search" name="search" placeholder="Ex : Application de gestion santé"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>" onchange="this.form.submit()">
-                </div>
-
-                <!-- Client -->
-                <div class="input-container">
-                    <label for="client_id">Client :</label>
-                    <select id="client_id" name="client_id" onchange="this.form.submit()">
-                        <option value="">-- Tous les clients --</option>
-                        <?php foreach ($clients as $client): ?>
-                            <option value="<?= $client->getId(); ?>"
-                                <?= ($client_id ?? null) == $client->getId() ? 'selected' : ''; ?>>
-                                <?= $client->getName(); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
+                        list="projects-suggestions"
+                        autocomplete="off"
+                        oninput="clearTimeout(this._t); this._t = setTimeout(() => this.form.submit(), 400)">
+                    <datalist id="projects-suggestions">
+                        <?php
+                        $seen = [];
+                        foreach ($data as $row_data):
+                            $name = $row_data['project']->getName();
+                            if (!in_array($name, $seen)):
+                                $seen[] = $name;
+                        ?>
+                            <option value="<?= htmlspecialchars($name, ENT_QUOTES); ?>">
+                        <?php
+                            endif;
+                        endforeach; ?>
+                    </datalist>
                 </div>
 
                 <!-- Statut -->

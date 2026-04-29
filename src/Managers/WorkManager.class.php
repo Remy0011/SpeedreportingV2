@@ -44,8 +44,15 @@ class WorkManager extends BaseManager
         // Recherche globale
         if (!empty($filters['search'])) {
             $search = "%{$filters['search']}%";
-            $query .= " AND (user_firstname LIKE ? OR user_lastname LIKE ? OR project_name LIKE ? OR client_name LIKE ?)";
-            $params = array_merge($params, [$search, $search, $search, $search]);
+            $query .= " AND (
+                user_firstname LIKE ? 
+                OR user_lastname LIKE ? 
+                OR project_name LIKE ? 
+                OR client_name LIKE ?
+                OR CONCAT(user_firstname, ' ', user_lastname) LIKE ?
+                OR CONCAT(user_lastname, ' ', user_firstname) LIKE ?
+            )";
+            $params = array_merge($params, [$search, $search, $search, $search, $search, $search]);
         }
 
         // Filtre par statut
@@ -240,17 +247,24 @@ class WorkManager extends BaseManager
         $query = "SELECT work_id, work_count, work_week, work_year, work_day, work_description, work_status, work_creation,
                 user_id, user_firstname, user_lastname,
                 project_id, project_name, project_description, project_creation, project_end
-              FROM table_work
+            FROM table_work
                 LEFT JOIN table_project ON table_work.work_project = project_id
                 LEFT JOIN table_user ON table_work.work_user = user_id
-              WHERE work_status = 'en_attente'";
+                LEFT JOIN table_client ON table_project.project_client = table_client.client_id
+            WHERE work_status = 'en_attente'";
 
         $params = [];
 
         if (!empty($filters['search'])) {
             $search = "%{$filters['search']}%";
-            $query .= " AND (user_firstname LIKE ? OR user_lastname LIKE ? OR project_name LIKE ?)";
-            $params = array_merge($params, [$search, $search, $search]);
+            $query .= " AND (
+                user_firstname LIKE ? 
+                OR user_lastname LIKE ? 
+                OR project_name LIKE ?
+                OR CONCAT(user_firstname, ' ', user_lastname) LIKE ?
+                OR CONCAT(user_lastname, ' ', user_firstname) LIKE ?
+            )";
+            $params = array_merge($params, [$search, $search, $search, $search, $search]);
         }
 
         if (!empty($filters['project_id'])) {
@@ -508,8 +522,8 @@ class WorkManager extends BaseManager
         if (!empty($criteria)) {
             if (!empty($criteria['search'])) {
                 $search = '%' . $criteria['search'] . '%';
-                $where[] = "(user_firstname LIKE ? OR user_lastname LIKE ? OR project_name LIKE ? OR client_name LIKE ?)";
-                $params = array_fill(0, 4, $search);
+                $where[] = "(user_firstname LIKE ? OR user_lastname LIKE ? OR project_name LIKE ? OR client_name LIKE ? OR CONCAT(user_firstname, ' ', user_lastname) LIKE ? OR CONCAT(user_lastname, ' ', user_firstname) LIKE ?)";
+                $params = array_fill(0, 6, $search);
             }
 
             if (!empty($criteria['status'])) {

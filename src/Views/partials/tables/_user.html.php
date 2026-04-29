@@ -12,13 +12,24 @@ use Src\Services\CsrfService;
             <div class="filter-container">
                 <div class="input-container">
                     <label for="search">Rechercher par utilisateur :</label>
-                    <input
-                        type="text"
-                        id="search"
-                        name="search"
-                        placeholder="Ex : John"
+                    <input type="text" id="search" name="search" placeholder="Ex : John"
                         value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
-                        onchange="this.form.submit()">
+                        list="users-suggestions"
+                        autocomplete="off"
+                        oninput="clearTimeout(this._t); this._t = setTimeout(() => this.form.submit(), 400)">
+                    <datalist id="users-suggestions">
+                        <?php
+                        $seen = [];
+                        foreach ($data as $row_data):
+                            $name = $row_data['user']->getName();
+                            if (!in_array($name, $seen)):
+                                $seen[] = $name;
+                        ?>
+                            <option value="<?= htmlspecialchars($name, ENT_QUOTES); ?>">
+                        <?php
+                            endif;
+                        endforeach; ?>
+                    </datalist>
                 </div>
 
                 <div class="input-container">

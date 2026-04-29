@@ -12,7 +12,23 @@ use Src\Models\Enums\Type\ClientType;
                 <div class="input-container">
                     <label for="search">Rechercher par client :</label>
                     <input type="text" id="search" name="search" placeholder="Ex : Synapsia"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>" onchange="this.form.submit()">
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
+                        list="clients-suggestions"
+                        autocomplete="off"
+                        oninput="clearTimeout(this._t); this._t = setTimeout(() => this.form.submit(), 400)">
+                    <datalist id="clients-suggestions">
+                        <?php
+                        $seen = [];
+                        foreach ($data as $row_data):
+                            $name = $row_data->getName();
+                            if (!in_array($name, $seen)):
+                                $seen[] = $name;
+                        ?>
+                            <option value="<?= htmlspecialchars($name, ENT_QUOTES); ?>">
+                        <?php
+                            endif;
+                        endforeach; ?>
+                    </datalist>
                 </div>
 
                 <!-- Type de client -->

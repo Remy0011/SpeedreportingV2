@@ -11,8 +11,23 @@ use Src\Models\Enums\Status\WorkStatus;
                 <div class="input-container">
                     <label for="search">Rechercher :</label>
                     <input type="text" id="search" name="search" placeholder="Rechercher par utilisateur"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>" 
-                        onchange="this.form.submit()">
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
+                        list="users-suggestions"
+                        autocomplete="off"
+                        oninput="clearTimeout(this._t); this._t = setTimeout(() => this.form.submit(), 400)">
+                    <datalist id="users-suggestions">
+                        <?php
+                        $seen = [];
+                        foreach ($data as $row_data):
+                            $name = $row_data['week']->getUser()->getName();
+                            if (!in_array($name, $seen)):
+                                $seen[] = $name;
+                        ?>
+                            <option value="<?= htmlspecialchars($name, ENT_QUOTES); ?>">
+                        <?php
+                            endif;
+                        endforeach; ?>
+                    </datalist>
                 </div>
 
                 <div class="input-container">
