@@ -36,11 +36,11 @@ use Src\Models\Enums\Type\ClientType;
 
                 <!-- Bouton -->
                 <button type="submit" class="button primary">Filtrer</button>
-            </div>
 
-            <div class="container-btn-create">
-                <a href="#" class="button secondary" data-modal="create">Créer</a>
-            </div>
+                <div class="container-btn-create">
+                    <a href="#" class="button secondary" data-modal="create">Créer</a>
+                </div>
+            </div>            
         </div>
     </form>
 

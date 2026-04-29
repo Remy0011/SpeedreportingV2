@@ -52,11 +52,13 @@ use Src\Models\Enums\Status\ProjectStatus;
 
                 <!-- Bouton -->
                 <button type="submit" class="button primary">Filtrer</button>
+
+                <div class="container-btn-create">
+                    <a href="#" class="button secondary" data-modal="create">Créer</a>
+                </div>
             </div>
 
-            <div class="container-btn-create">
-                <a href="#" class="button secondary" data-modal="create">Créer</a>
-            </div>
+            
         </div>
     </form>
 
