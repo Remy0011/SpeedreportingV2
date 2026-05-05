@@ -217,11 +217,30 @@ class UserManager extends BaseManager
     }
 
     /**
+     * Recherche des utilisateurs par nom complet.
+     * @param string $name Le nom à rechercher.
+     * @return array Les utilisateurs correspondants.
+     */
+    public function searchByName(string $name): array
+    {
+        $search = '%' . $name . '%';
+        $stmt = $this->pdo->prepare(
+            "SELECT user_id FROM table_user 
+            WHERE CONCAT(user_firstname, ' ', user_lastname) LIKE ?
+            OR CONCAT(user_lastname, ' ', user_firstname) LIKE ?
+            LIMIT 1"
+        );
+        $stmt->execute([$search, $search]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Supprime un utilisateur de la base de données.
      * @param int $user_id L'ID de l'utilisateur à supprimer.
      * 
      * @return bool True si l'utilisateur a été supprimé avec succès, sinon false.
      */
+
     public function deleteUser(int $user_id): bool
     {
         $query = "DELETE FROM table_{$this::$table} WHERE user_id = :user_id";

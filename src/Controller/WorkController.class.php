@@ -61,7 +61,17 @@ class WorkController extends BaseController
             ];
         }
 
-        $projects = (new ProjectManager())->getOptions();
+        if (!empty($filters['search'])) {
+            $matchingUsers = (new UserManager())->searchByName($filters['search']);
+            if (!empty($matchingUsers)) {
+                $userId = $matchingUsers[0]['user_id'];
+                $projects = (new ProjectManager())->getOptionsByUser($userId);
+            } else {
+                $projects = (new ProjectManager())->getOptions();
+            }
+        } else {
+            $projects = (new ProjectManager())->getOptions();
+        }
         $work_to_validate = (new WorkManager())->countToValidate() > 0;
 
         $groupedData = [];
@@ -639,7 +649,19 @@ class WorkController extends BaseController
             ]
         );
 
-        $projects = (new ProjectManager())->getOptions();
+        if (!empty($filters['search'])) {
+            // Trouver l'user_id correspondant au nom recherché
+            $userManager = new UserManager();
+            $matchingUsers = $userManager->searchByName($filters['search']);
+            if (!empty($matchingUsers)) {
+                $userId = $matchingUsers[0]['user_id'];
+                $projects = (new ProjectManager())->getOptionsByUser($userId);
+            } else {
+                $projects = (new ProjectManager())->getOptions();
+            }
+        } else {
+            $projects = (new ProjectManager())->getOptions();
+        }
 
         $this::render('Work/validate', [
             'search' => $filters['search'],
