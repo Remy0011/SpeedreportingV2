@@ -56,18 +56,19 @@ use Src\Models\Enums\Status\WorkStatus;
                     </select>
                 </div>
 
-                <!-- Semaine -->
+                <!-- Période -->
                 <div class="input-container">
-                    <label for="week">Semaine :</label>
-                    <input type="number" id="week" name="week" min="1" max="53" placeholder="Ex : 12"
-                        value="<?= htmlspecialchars($week ?? '', ENT_QUOTES); ?>" onchange="this.form.submit()">
+                    <label for="date_from">Du :</label>
+                    <input type="date" id="date_from" name="date_from"
+                        value="<?= htmlspecialchars($_GET['date_from'] ?? '', ENT_QUOTES); ?>"
+                        onchange="this.form.submit()">
                 </div>
 
-                <!-- Année -->
                 <div class="input-container">
-                    <label for="year">Année :</label>
-                    <input type="number" id="year" name="year" min="2000" placeholder="Ex : 2025"
-                        value="<?= htmlspecialchars($year ?? '', ENT_QUOTES); ?>" onchange="this.form.submit()">
+                    <label for="date_to">Au :</label>
+                    <input type="date" id="date_to" name="date_to"
+                        value="<?= htmlspecialchars($_GET['date_to'] ?? '', ENT_QUOTES); ?>"
+                        onchange="this.form.submit()">
                 </div>
 
                 <!-- Bouton -->
@@ -83,7 +84,7 @@ use Src\Models\Enums\Status\WorkStatus;
                 <th>Nombre d'heures</th>
                 <th>Projet</th>
                 <th>État</th>
-                <th>Semaine</th>
+                <th>Période</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -123,7 +124,16 @@ use Src\Models\Enums\Status\WorkStatus;
                                 <?= $lastWork->getStatus(fr: true); ?>
                             </div>
                         </td>
-                        <td><?= htmlspecialchars($group['week']); ?></td>
+                        <td><?php
+                            $firstWork = reset($group['works']);
+                            $year = $firstWork->getYear();
+                            $weekNum = $group['week'];
+                            $monday = new DateTime();
+                            $monday->setISODate($year, $weekNum, 1);
+                            $friday = clone $monday;
+                            $friday->modify('+4 days');
+                            echo $monday->format('d/m/Y') . ' → ' . $friday->format('d/m/Y');
+                        ?></td>
                         <?php $id = $group['user']->getId() . '_' . $group['week']; ?>
                         <td class="action">
                             <a href="#" class="button primary minimal" data-modal="read_<?= $id ?>"><i class='bx bx-show'></i> <span>Détails</span></a>
@@ -143,7 +153,16 @@ use Src\Models\Enums\Status\WorkStatus;
             require __DIR__ . '/../modals/read/_top.html.php';
             ?>
             <p><strong>Utilisateur :</strong> <?= htmlspecialchars($group['user']->getName()) ?></p>
-            <p><strong>Semaine :</strong> <?= htmlspecialchars($group['week']) ?></p>
+            <p><strong>Période :</strong><?php
+                $firstWork = reset($group['works']);
+                $year = $firstWork->getYear();
+                $weekNum = $group['week'];
+                $monday = new DateTime();
+                $monday->setISODate($year, $weekNum, 1);
+                $friday = clone $monday;
+                $friday->modify('+4 days');
+                echo $monday->format('d/m/Y') . ' → ' . $friday->format('d/m/Y');
+            ?></p>
 
             <div class="hours-details">
                 <p><strong>Heures semaine :</strong>

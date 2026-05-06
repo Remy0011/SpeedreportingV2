@@ -80,14 +80,14 @@ class WorkManager extends BaseManager
         }
 
         // Filtre par semaine / année
-        if (!empty($filters['week'])) {
-            $query .= " AND work_week = ?";
-            $params[] = $filters['week'];
+        if (!empty($filters['date_from'])) {
+            $query .= " AND work_creation >= ?";
+            $params[] = $filters['date_from'] . ' 00:00:00';
         }
 
-        if (!empty($filters['year'])) {
-            $query .= " AND work_year = ?";
-            $params[] = $filters['year'];
+        if (!empty($filters['date_to'])) {
+            $query .= " AND work_creation <= ?";
+            $params[] = $filters['date_to'] . ' 23:59:59';
         }
 
         $query .= " LIMIT $limit OFFSET $offset";
@@ -546,14 +546,14 @@ class WorkManager extends BaseManager
                 $params[] = $criteria['project_id'];
             }
 
-            if (!empty($criteria['week'])) {
-                $where[] = "WEEK(work_week, 1) = ?";
-                $params[] = $criteria['week'];
+            if (!empty($filters['date_from'])) {
+                $query .= " AND work_creation >= ?";
+                $params[] = $filters['date_from'] . ' 00:00:00';
             }
 
-            if (!empty($criteria['year'])) {
-                $where[] = "YEAR(work_week) = ?";
-                $params[] = $criteria['year'];
+            if (!empty($filters['date_to'])) {
+                $query .= " AND work_creation <= ?";
+                $params[] = $filters['date_to'] . ' 23:59:59';
             }
         }
 
