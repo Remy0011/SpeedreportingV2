@@ -12,28 +12,30 @@ use Src\Models\Enums\Status\ProjectStatus;
                 <div class="input-container">
                     <label for="search">Rechercher par nom de projet :</label>
                     <input type="text" id="search" name="search" placeholder="Ex : Application de gestion santé"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>">
-                </div>
-
-                <!-- Client -->
-                <div class="input-container">
-                    <label for="client_id">Client :</label>
-                    <select id="client_id" name="client_id">
-                        <option value="">-- Tous les clients --</option>
-                        <?php foreach ($clients as $client): ?>
-                            <option value="<?= $client->getId(); ?>"
-                                <?= ($client_id ?? null) == $client->getId() ? 'selected' : ''; ?>>
-                                <?= $client->getName(); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
+                        list="projects-suggestions"
+                        autocomplete="off"
+                        oninput="clearTimeout(this._t); this._t = setTimeout(() => this.form.submit(), 400)">
+                    <datalist id="projects-suggestions">
+                        <?php
+                        $seen = [];
+                        foreach ($data as $row_data):
+                            $name = $row_data['project']->getName();
+                            if (!in_array($name, $seen)):
+                                $seen[] = $name;
+                        ?>
+                            <option value="<?= htmlspecialchars($name, ENT_QUOTES); ?>">
+                        <?php
+                            endif;
+                        endforeach; ?>
+                    </datalist>
                 </div>
 
                 <!-- Statut -->
                 <div class="input-container">
                     <label for="status">Statut :</label>
                     <?php $currentStatus = $_GET['status'] ?? ''; ?>
-                    <select id="status" name="status">
+                    <select id="status" name="status" onchange="this.form.submit()">
                         <option value="">-- Tous les statuts --</option>
                         <?php foreach (ProjectStatus::getEnumOptions() as $status => $label): ?>
                             <option value="<?= $status; ?>" <?= $currentStatus === $status ? 'selected' : ''; ?>>
@@ -47,14 +49,15 @@ use Src\Models\Enums\Status\ProjectStatus;
                 <div class="input-container">
                     <label for="start_year">Année de début:</label>
                     <input type="number" id="start_year" name="start_year" placeholder="Ex: 2025" min="2000" max="2250" step="1"
-                        value="<?= htmlspecialchars($start_year ?? '', ENT_QUOTES); ?>">
+                        value="<?= htmlspecialchars($start_year ?? '', ENT_QUOTES); ?>" onchange="this.form.submit()">
                 </div>
 
                 <!-- Bouton -->
                 <button type="submit" class="button primary">Filtrer</button>
+                <a href="?">Réinitialiser</a>
 
                 <div class="container-btn-create">
-                    <a href="#" class="button secondary" data-modal="create">Créer</a>
+                    <a href="#" data-modal="create">Créer</a>
                 </div>
             </div>
 

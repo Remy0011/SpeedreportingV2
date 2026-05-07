@@ -136,8 +136,15 @@ class UserManager extends BaseManager
 
         // Recherche globale
         if (!empty($filters['search'])) {
-            $query .= " AND (user_email LIKE :search OR user_firstname LIKE :search OR user_lastname LIKE :search)";
-            $params[':search'] = '%' . $filters['search'] . '%';
+            $search = '%' . $filters['search'] . '%';
+            $query .= " AND (
+                user_email LIKE ? 
+                OR user_firstname LIKE ? 
+                OR user_lastname LIKE ?
+                OR CONCAT(user_firstname, ' ', user_lastname) LIKE ?
+                OR CONCAT(user_lastname, ' ', user_firstname) LIKE ?
+            )";
+            $params = array_merge($params, [$search, $search, $search, $search, $search]);
         }
 
         // Filtre par statut
@@ -179,18 +186,25 @@ class UserManager extends BaseManager
         $params = [];
 
         if (!empty($filters['search'])) {
-            $query .= " AND (user_email LIKE :search OR user_firstname LIKE :search OR user_lastname LIKE :search)";
-            $params[':search'] = '%' . $filters['search'] . '%';
+            $search = '%' . $filters['search'] . '%';
+            $query .= " AND (
+                user_email LIKE ? 
+                OR user_firstname LIKE ? 
+                OR user_lastname LIKE ?
+                OR CONCAT(user_firstname, ' ', user_lastname) LIKE ?
+                OR CONCAT(user_lastname, ' ', user_firstname) LIKE ?
+            )";
+            $params = array_merge($params, [$search, $search, $search, $search, $search]);
         }
 
         if (!empty($filters['status'])) {
-            $query .= " AND user_status = :status";
-            $params[':status'] = $filters['status'];
+            $query .= " AND user_status = ?";
+            $params[] = $filters['status'];
         }
 
         if (!empty($filters['role_id'])) {
-            $query .= " AND user_role = :role_id";
-            $params[':role_id'] = $filters['role_id'];
+            $query .= " AND user_role = ?";
+            $params[] = $filters['role_id'];
         }
 
         try {
@@ -203,11 +217,30 @@ class UserManager extends BaseManager
     }
 
     /**
+     * Recherche des utilisateurs par nom complet.
+     * @param string $name Le nom à rechercher.
+     * @return array Les utilisateurs correspondants.
+     */
+    public function searchByName(string $name): array
+    {
+        $search = '%' . $name . '%';
+        $stmt = $this->pdo->prepare(
+            "SELECT user_id FROM table_user 
+            WHERE CONCAT(user_firstname, ' ', user_lastname) LIKE ?
+            OR CONCAT(user_lastname, ' ', user_firstname) LIKE ?
+            LIMIT 1"
+        );
+        $stmt->execute([$search, $search]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Supprime un utilisateur de la base de données.
      * @param int $user_id L'ID de l'utilisateur à supprimer.
      * 
      * @return bool True si l'utilisateur a été supprimé avec succès, sinon false.
      */
+
     public function deleteUser(int $user_id): bool
     {
         $query = "DELETE FROM table_{$this::$table} WHERE user_id = :user_id";

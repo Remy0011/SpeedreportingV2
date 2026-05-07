@@ -41,8 +41,8 @@ class WorkController extends BaseController
             'user_id' => $_GET['user_id'] ?? null,
             'client_name' => $_GET['client_name'] ?? null,
             'project_id' => $_GET['project_id'] ?? null,
-            'week' => $_GET['week'] ?? null,
-            'year' => $_GET['year'] ?? null,
+            'date_from'  => $_GET['date_from'] ?? null, 
+            'date_to'    => $_GET['date_to'] ?? null,
         ];
 
         // Pagination
@@ -61,7 +61,17 @@ class WorkController extends BaseController
             ];
         }
 
-        $projects = (new ProjectManager())->getOptions();
+        if (!empty($filters['search'])) {
+            $matchingUsers = (new UserManager())->searchByName($filters['search']);
+            if (!empty($matchingUsers)) {
+                $userId = $matchingUsers[0]['user_id'];
+                $projects = (new ProjectManager())->getOptionsByUser($userId);
+            } else {
+                $projects = (new ProjectManager())->getOptions();
+            }
+        } else {
+            $projects = (new ProjectManager())->getOptions();
+        }
         $work_to_validate = (new WorkManager())->countToValidate() > 0;
 
         $groupedData = [];
@@ -99,8 +109,8 @@ class WorkController extends BaseController
             'status' => $filters['status'],
             'user_id' => $filters['user_id'],
             'client_name' => $filters['client_name'],
-            'week' => $filters['week'],
-            'year' => $filters['year'],
+            'date_from' => $filters['date_from'],
+            'date_to' => $filters['date_to'],
             'data' => $data,
             'groupedData' => $groupedData,
             'pages' => $pages,
@@ -112,8 +122,8 @@ class WorkController extends BaseController
             'status' => $filters['status'],
             'user_id' => $filters['user_id'],
             'client_name' => $filters['client_name'],
-            'week' => $filters['week'],
-            'year' => $filters['year'],
+            'date_from' => $filters['date_from'],
+            'date_to' => $filters['date_to'],
             'data' => $data,
             'pages' => $pages,
             'groupedData' => $groupedData,
@@ -639,7 +649,19 @@ class WorkController extends BaseController
             ]
         );
 
-        $projects = (new ProjectManager())->getOptions();
+        if (!empty($filters['search'])) {
+            // Trouver l'user_id correspondant au nom recherché
+            $userManager = new UserManager();
+            $matchingUsers = $userManager->searchByName($filters['search']);
+            if (!empty($matchingUsers)) {
+                $userId = $matchingUsers[0]['user_id'];
+                $projects = (new ProjectManager())->getOptionsByUser($userId);
+            } else {
+                $projects = (new ProjectManager())->getOptions();
+            }
+        } else {
+            $projects = (new ProjectManager())->getOptions();
+        }
 
         $this::render('Work/validate', [
             'search' => $filters['search'],

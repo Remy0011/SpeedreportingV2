@@ -12,17 +12,29 @@ use Src\Services\CsrfService;
             <div class="filter-container">
                 <div class="input-container">
                     <label for="search">Rechercher par utilisateur :</label>
-                    <input
-                        type="text"
-                        id="search"
-                        name="search"
-                        placeholder="Ex : John"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>">
+                    <input type="text" id="search" name="search" placeholder="Ex : John"
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
+                        list="users-suggestions"
+                        autocomplete="off"
+                        oninput="clearTimeout(this._t); this._t = setTimeout(() => this.form.submit(), 400)">
+                    <datalist id="users-suggestions">
+                        <?php
+                        $seen = [];
+                        foreach ($data as $row_data):
+                            $name = $row_data['user']->getName();
+                            if (!in_array($name, $seen)):
+                                $seen[] = $name;
+                        ?>
+                            <option value="<?= htmlspecialchars($name, ENT_QUOTES); ?>">
+                        <?php
+                            endif;
+                        endforeach; ?>
+                    </datalist>
                 </div>
 
                 <div class="input-container">
                     <label for="status">Statut :</label>
-                    <select id="status" name="status">
+                    <select id="status" name="status" onchange="this.form.submit()">
                         <option value="" <?= ($status === null || $status === '') ? 'selected' : ''; ?>>-- Tous les status --</option>
                         <?php foreach (UserStatus::getEnumOptions() as $value => $label): ?>
                             <option value="<?= $value; ?>" <?= ($status !== null && (string)$status === (string)$value) ? 'selected' : ''; ?>>
@@ -34,7 +46,7 @@ use Src\Services\CsrfService;
                 
                 <div class="input-container">
                     <label for="role_id">Rôle :</label>
-                    <select id="role_id" name="role_id">
+                    <select id="role_id" name="role_id" onchange="this.form.submit()">
                         <option value="" <?= ($role_id === null || $role_id === '') ? 'selected' : ''; ?>>-- Tous les rôles --</option>
                         <?php foreach ($roles as $role): ?>
                             <option value="<?= $role->getId(); ?>" <?= ($role_id == $role->getId()) ? 'selected' : ''; ?>>
@@ -45,9 +57,10 @@ use Src\Services\CsrfService;
                 </div>
 
                 <button type="submit" class="button primary">Filtrer</button>
+                <a href="?">Réinitialiser</a>
 
                 <div class="container-btn-create">
-                    <a href="#" class="button secondary" data-modal="create">Créer</a>
+                    <a href="#" data-modal="create">Créer</a>
                 </div>
             </div>
         </div>

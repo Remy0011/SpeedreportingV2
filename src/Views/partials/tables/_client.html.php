@@ -12,13 +12,29 @@ use Src\Models\Enums\Type\ClientType;
                 <div class="input-container">
                     <label for="search">Rechercher par client :</label>
                     <input type="text" id="search" name="search" placeholder="Ex : Synapsia"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>">
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
+                        list="clients-suggestions"
+                        autocomplete="off"
+                        oninput="clearTimeout(this._t); this._t = setTimeout(() => this.form.submit(), 400)">
+                    <datalist id="clients-suggestions">
+                        <?php
+                        $seen = [];
+                        foreach ($data as $row_data):
+                            $name = $row_data->getName();
+                            if (!in_array($name, $seen)):
+                                $seen[] = $name;
+                        ?>
+                            <option value="<?= htmlspecialchars($name, ENT_QUOTES); ?>">
+                        <?php
+                            endif;
+                        endforeach; ?>
+                    </datalist>
                 </div>
 
                 <!-- Type de client -->
                 <div class="input-container">
                     <label for="type">Type :</label>
-                    <select id="type" name="type">
+                    <select id="type" name="type" onchange="this.form.submit()">
                         <option value="">-- Tous les types --</option>
 
                         <?php foreach (ClientType::getGroupedEnumOptions() as $groupLabel => $types): ?>
@@ -36,9 +52,10 @@ use Src\Models\Enums\Type\ClientType;
 
                 <!-- Bouton -->
                 <button type="submit" class="button primary">Filtrer</button>
+                <a href="?">Réinitialiser</a>
 
                 <div class="container-btn-create">
-                    <a href="#" class="button secondary" data-modal="create">Créer</a>
+                    <a href="#" data-modal="create">Créer</a>
                 </div>
             </div>            
         </div>

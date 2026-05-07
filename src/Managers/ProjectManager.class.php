@@ -39,6 +39,31 @@ class ProjectManager extends BaseManager
     }
 
     /**
+     * Récupère les projets sur lesquels un utilisateur a travaillé.
+     * @param int $userId L'ID de l'utilisateur.
+     * @return array Tableau associatif des options (id => nom).
+     */
+    public function getOptionsByUser(int $userId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT DISTINCT p.project_id AS id, p.project_name AS name
+            FROM table_project p
+            INNER JOIN table_work w ON w.work_project = p.project_id
+            WHERE w.work_user = ?
+            AND p.project_type = 'travail'
+            ORDER BY p.project_name ASC"
+        );
+        $stmt->execute([$userId]);
+
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $options = [];
+        foreach ($rows as $row) {
+            $options[htmlspecialchars($row['id'])] = htmlspecialchars($row['name']);
+        }
+        return $options;
+    }
+
+    /**
      * Récupère les projets de l'utilisateur avec leur progression.
      * Cette méthode récupère les projets associés à un utilisateur
      * et calcule la progression de chaque projet en pourcentage.
