@@ -126,7 +126,8 @@ class Project extends BaseModel
     public function getStart(bool $raw = false): string|null
     {
         if (!is_null($this->start)) {
-            return $raw ? $this->start : htmlspecialchars($this->start);
+            $value = (new \DateTime($this->start))->format('d/m/Y');
+            return $raw ? $value : htmlspecialchars($value);
         }
         return null;
     }
@@ -140,7 +141,8 @@ class Project extends BaseModel
     public function getEnd(bool $raw = false): string|null
     {
         if (!is_null($this->end)) {
-            return $raw ? $this->end : htmlspecialchars($this->end);
+            $value = (new \DateTime($this->end))->format('d/m/Y');
+            return $raw ? $value : htmlspecialchars($value);
         }
         return null;
     }
@@ -153,7 +155,8 @@ class Project extends BaseModel
     public function getRealEnd(bool $raw = false): string|null
     {
         if (!is_null($this->realend)) {
-            return $raw ? $this->realend : htmlspecialchars($this->realend);
+            $value = (new \DateTime($this->realend))->format('d/m/Y');
+            return $raw ? $value : htmlspecialchars($value);
         }
         return null;
     }
