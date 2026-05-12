@@ -127,20 +127,45 @@ use Src\Models\Enums\Status\ProjectStatus;
     <div class="modals">
         <?php foreach ($data as $id => $row_data): ?>
             <?php require __DIR__ . '/../modals/read/_top.html.php'; ?>
+            <div class="project-stats-summary">
+            <?php
+                $progress = (int) $row_data['progression']['progression'];
+                $worked = $row_data['progression']['workedHours'];
+                $total = $row_data['progression']['resourceHours'];
+                $color = '#28a745';
+            ?>
+                <div>
+                    <h3 class="summary-title">Volume d'heures</h3>
+                    <p class="summary-content"><?= $row_data['project']->getResource(); ?>h</p>
+                </div>
+                <div>
+                    <h3 class="summary-title">Progression</h3>
+                    <p class="summary-content"><?= $progress ?>%</p>
+                </div>
+                <div>
+                    <h3 class="summary-title">Heures réalisées</h3>
+                    <p class="summary-content"><?= $worked ?>h</p>
+                </div>
+                <div>
+                    <h3 class="summary-title">État</h3>
+                    <p class="tag <?= ProjectStatus::getColor($row_data['project']->getStatus()) ?> summary-content">
+                        <?= $row_data['project']->getStatus(fr: true);?>
+                    </p>
+                </div>
+            </div>
+            <div>
+                <h3 class="human-ressources"><span class="bx bx-group"></span>Ressources humaines</h3>
+                <div class="assigned">
+                    <h4 class="assigned-title"><span class="bx bx-check"></span> Assignés (<?=$row_data['project']->getDev();?>)</h4>
+                    
+                </div>
+            </div>
             <p><strong>Nom :</strong> <?= $row_data['project']->getName(); ?></p>
             <p><strong>Client :</strong> <?= $row_data['client']->getName(); ?></p>
             <p><strong>Description:</strong>
                 <?= !empty($row_data['project']->getDescription()) ? $row_data['project']->getDescription() : 'Non renseignée'; ?>
             </p>
-            <p><strong>Volume d'heures :</strong> <?= $row_data['project']->getResource(); ?>h</p>
             <p><strong>Ressources humaines :</strong> <?= $row_data['project']->getDev(); ?> développeurs</p>
-            <p><strong>État :</strong> <?= $row_data['project']->getStatus(fr: true); ?></p>
-            <?php
-            $progress = (int) $row_data['progression']['progression'];
-            $worked = $row_data['progression']['workedHours'];
-            $total = $row_data['progression']['resourceHours'];
-            $color = '#28a745';
-            ?>
             <p><strong>Progression :</strong></p>
             <div class="progress-bar-container" style="margin-bottom: 0.25rem;">
                 <div class="progress-bar" style="width: <?= $progress ?>%; background-color: <?= $color ?>;"></div>
@@ -154,6 +179,19 @@ use Src\Models\Enums\Status\ProjectStatus;
             <?php require __DIR__ . '/../modals/read/_bottom.html.php'; ?>
 
             <?php require __DIR__ . '/../modals/edit/_top.html.php'; ?>
+            <div>
+                <h3 class="human-ressources"><span class="bx bx-group"></span>Ressources humaines</h3>
+                <div class="human-ressources-section">
+                    <div class="assigned">
+                        <h4 class="assigned-title"><span class="bx bx-check"></span> Assignés (<?=$row_data['project']->getDev();?>)</h4>
+                        
+                    </div>
+                    <div class="available">
+                        <h4 class="available-title"><span class="bx bx-user-plus"></span> Disponibles (<??>)</h4>
+                        
+                    </div>
+                </div>
+            </div>
             <div class="input-container">
                 <label for="project_name">Nom :</label>
                 <input type="text" id="project_name" name="project_name" value="<?= $row_data['project']->getName(); ?>"
