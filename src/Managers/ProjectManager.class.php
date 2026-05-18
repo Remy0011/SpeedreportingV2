@@ -3,7 +3,7 @@
 namespace Src\Managers;
 
 /**
- * Clasee pour gérer les rôles dans la base de données.
+ * Classe pour gérer les projets dans la base de données.
  * Elle hérite de la classe de base BaseManager.
  */
 class ProjectManager extends BaseManager
@@ -12,7 +12,7 @@ class ProjectManager extends BaseManager
 
     /**
      * Récupère les options de la table projet sous forme de tableau associatif.
-     * 
+     *
      * @return array Tableau associatif des options (id => nom).
      */
     public function getOptions()
@@ -40,6 +40,7 @@ class ProjectManager extends BaseManager
 
     /**
      * Récupère les projets sur lesquels un utilisateur a travaillé.
+     *
      * @param int $userId L'ID de l'utilisateur.
      * @return array Tableau associatif des options (id => nom).
      */
@@ -61,6 +62,62 @@ class ProjectManager extends BaseManager
             $options[htmlspecialchars($row['id'])] = htmlspecialchars($row['name']);
         }
         return $options;
+    }
+
+    /**
+     * Récupère la liste des utilisateurs assignés à un projet.
+     * Retourne un tableau de tableaux associatifs prêt à être utilisé dans la vue.
+     *
+     * @param int $projectId L'ID du projet.
+     * @return array Tableau de tableaux ['user_id', 'user_firstname', 'user_lastname', 'user_email', 'user_picture'].
+     */
+    public function getProjectUsers(int $projectId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT u.user_id, u.user_firstname, u.user_lastname, u.user_email, u.user_picture
+            FROM table_project_user pu
+            JOIN table_user u ON u.user_id = pu.project_user_user_id
+            WHERE pu.project_user_project_id = :projectId
+            AND u.user_id != 0
+            ORDER BY u.user_lastname ASC, u.user_firstname ASC"
+        );
+        $stmt->bindParam(':projectId', $projectId, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Assigne un utilisateur à un projet.
+     *
+     * @param int $projectId
+     * @param int $userId
+     * @return bool
+     */
+    public function assignUser(int $projectId, int $userId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            "INSERT IGNORE INTO table_project_user (project_user_project_id, project_user_user_id)
+            VALUES (:projectId, :userId)"
+        );
+        return $stmt->execute([':projectId' => $projectId, ':userId' => $userId]);
+    }
+
+    /**
+     * Retire un utilisateur d'un projet.
+     *
+     * @param int $projectId
+     * @param int $userId
+     * @return bool
+     */
+    public function unassignUser(int $projectId, int $userId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            "DELETE FROM table_project_user
+            WHERE project_user_project_id = :projectId
+            AND project_user_user_id = :userId"
+        );
+        return $stmt->execute([':projectId' => $projectId, ':userId' => $userId]);
     }
 
     /**
@@ -114,7 +171,7 @@ class ProjectManager extends BaseManager
      * La barre est verte temps qu'on est pas à la fin du projet.
      * SI on arrive à la fin du projet, et que le nombre d'heure pour un projet : project_ressource, n'a pas été pointé suffisamment de fois (nombre d'heure pour les utilisateurs) alors on est en retards, la barre deviens orange/rouge
      * SI on est à la fin et qu'il nous manque du temps, alors on rajoute un surplus de temps (realend) qui s'affiche ne rouge (uniquement ce pourcentage en plus)
-     * 
+     *
      * @param int $projectId L'ID du projet pour lequel récupérer la progression.
      * 
      * @return array Un tableau associatif contenant les informations du projet et sa progression.
@@ -150,13 +207,13 @@ class ProjectManager extends BaseManager
         }
 
         return [
-            'name' => $project['project_name'],
-            'progression' => $progression,
-            'start' => $project['project_start'],
-            'end' => $project['project_end'],
-            'realEnd' => $project['project_realend'],
-            'workedHours' => $workedHours,
-            'resourceHours' => $resourceHours
+            'name'          => $project['project_name'],
+            'progression'   => $progression,
+            'start'         => $project['project_start'],
+            'end'           => $project['project_end'],
+            'realEnd'       => $project['project_realend'],
+            'workedHours'   => $workedHours,
+            'resourceHours' => $resourceHours,
         ];
     }
 
@@ -164,7 +221,7 @@ class ProjectManager extends BaseManager
      * Récupère les données pour la table des projets avec pagination et filtres.
      * Cette méthode récupère les projets de la base de données
      * en appliquant des filtres de recherche, de client, de statut et d'année de début.
-     * 
+     *
      * @param int $page Le numéro de la page à récupérer (par défaut 1).
      * @param int $limit Le nombre d'entrées par page (par défaut 10).
      * @param array $filters Les filtres à appliquer (recherche, client_id, statut, start_year).
@@ -178,7 +235,7 @@ class ProjectManager extends BaseManager
         $limit = (int)$limit;
         $offset = (int)$offset;
 
-        $query = "SELECT project_id, project_name, project_description, project_resource, project_dev,
+        $query = "SELECT project_id, project_name, project_description, project_resource,
                 project_creation, project_start, project_end, project_realend, project_status,
                 client_id, client_name, client_type
             FROM table_project 
@@ -218,11 +275,11 @@ class ProjectManager extends BaseManager
         }
     }
 
-    /** 
+    /**
      * Récupère le nombre total de projets pour la pagination.
      * Cette méthode compte le nombre de projets dans la base de données
      * en appliquant des filtres de recherche, de client, de statut et d'année de début.
-     * 
+     *
      * @param array|null $filters Les filtres à appliquer (recherche, client_id, statut, start_year).
      * 
      * @return int Le nombre total de projets.
@@ -265,24 +322,28 @@ class ProjectManager extends BaseManager
 
     /**
      * Supprime un projet de la base de données.
-     * Cette méthode supprime un projet en fonction de son ID.
-     * Avant de supprimer le projet, elle met à jour les entrées de la table work
-     * pour réaffecter le projet à 0 (aucun projet).
-     * @param int $id L'ID du projet à supprimer.
-     * 
-     * @return bool Retourne true si la suppression a réussi, false sinon.
-     * @throws \Exception Si une erreur de base de données se produit.
+     * Réaffecte les entrées work au projet 0, et nettoie table_project_user.
+     *
+     * @param int $id
+     * @return bool
+     * @throws \Exception
      */
     public function delete(int $id): bool
     {
         try {
-            $updateQuery = "UPDATE table_work SET work_project = 0 WHERE work_project = :id";
-            $updateStmt = $this->pdo->prepare($updateQuery);
-            $updateStmt->execute([':id' => $id]);
+            // Réaffectation des pointages
+            $this->pdo->prepare(
+                "UPDATE table_work SET work_project = 0 WHERE work_project = :id"
+            )->execute([':id' => $id]);
 
-            $deleteQuery = "DELETE FROM table_project WHERE project_id = :id";
-            $deleteStmt = $this->pdo->prepare($deleteQuery);
-            return $deleteStmt->execute([':id' => $id]);
+            // Suppression des associations utilisateurs
+            $this->pdo->prepare(
+                "DELETE FROM table_project_user WHERE project_user_project_id = :id"
+            )->execute([':id' => $id]);
+
+            // Suppression du projet
+            $stmt = $this->pdo->prepare("DELETE FROM table_project WHERE project_id = :id");
+            return $stmt->execute([':id' => $id]);
         } catch (\PDOException $e) {
             throw new \Exception("Erreur lors de la suppression du projet : " . $e->getMessage());
         }
