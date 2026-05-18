@@ -94,7 +94,8 @@
     height: 50px;
     padding: 10px;
     box-sizing: border-box;
-    border-radius: var(--radius);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
 }
 
 .available {
@@ -108,7 +109,59 @@
     height: 50px;
     padding: 10px;
     box-sizing: border-box;
-    border-radius: var(--radius);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+}
+
+.user-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  transition: background .15s;
+}
+
+.user-item:hover {
+  background: var(--card-draft-bg-1);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 0.5px solid var(--color-t);
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.user-name {
+  font-size: 14px;
+  flex: 1;
+}
+
+.text-muted {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: var(--color-t);
+}
+
+.text-muted i {
+  font-size: 15px;
+  flex-shrink: 0;
 }
 
 .modal-body {
