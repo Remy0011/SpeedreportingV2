@@ -5,8 +5,10 @@ namespace Src\Controller;
 use Src\Core\ErrorKernel;
 use Src\Managers\ClientManager;
 use Src\Managers\ProjectManager;
+use Src\Managers\UserManager;
 use Src\Models\Client;
 use Src\Models\Project;
+use Src\Models\User;
 use Src\Services\CsrfService;
 
 class ProjectController extends BaseController
@@ -22,9 +24,9 @@ class ProjectController extends BaseController
     {
         // Préparation des filtres
         $filters = [
-            'search' => $_GET['search'] ?? null,
-            'status' => $_GET['status'] ?? null,
-            'client_id' => $_GET['client_id'] ?? null,
+            'search'     => $_GET['search'] ?? null,
+            'status'     => $_GET['status'] ?? null,
+            'client_id'  => $_GET['client_id'] ?? null,
             'start_year' => $_GET['start_year'] ?? null,
         ];
 
@@ -37,7 +39,7 @@ class ProjectController extends BaseController
 
         // Données projets
         $projectManager = new ProjectManager();
-        $rows_raw = (new ProjectManager())->getTableData(
+        $rows_raw = $projectManager->getTableData(
             page: $pages['current_page'],
             limit: 10,
             filters: $filters
@@ -45,15 +47,18 @@ class ProjectController extends BaseController
 
         $data = [];
         foreach ($rows_raw as $row) {
-            $project = new Project($row);
-            $client = new Client($row);
-
+            $project    = new Project($row);
+            $client     = new Client($row);
             $progression = $projectManager->getProjectProgression($project->getId());
 
+            // Liste des utilisateurs assignés au projet
+            $users = $projectManager->getProjectUsers($project->getId());
+
             $data[] = [
-                'project' => $project,
-                'client' => $client,
+                'project'     => $project,
+                'client'      => $client,
                 'progression' => $progression,
+                'users'       => $users,  // array of ['user_id', 'user_firstname', 'user_lastname', 'user_email', 'user_picture']
             ];
         }
 
@@ -65,30 +70,40 @@ class ProjectController extends BaseController
             $clients[$client->getId()] = $client;
         }
 
-        // Vue Ajax (si utilisée en dynamique)
+        // Tous les utilisateurs actifs — pour le picker d'assignation dans la modale edit
+        $all_users_raw = (new UserManager())->fetchAll();
+        $all_users = [];
+        foreach ($all_users_raw as $user_row) {
+            $user = new User($user_row);
+            if ($user->getId() !== 0) {
+                $all_users[$user->getId()] = $user;
+            }
+        }
+
+        // Vue Ajax
         $this::renderAjax('partials/tables/_project', [
-            'data' => $data,
-            'pages' => $pages,
-            'clients' => $clients,
+            'data'      => $data,
+            'pages'     => $pages,
+            'clients'   => $clients,
+            'all_users' => $all_users,
         ]);
 
         // Vue principale
         $this::render('Project/index', [
-            'search' => $filters['search'],
-            'status' => $filters['status'],
-            'client_id' => $filters['client_id'],
+            'search'     => $filters['search'],
+            'status'     => $filters['status'],
+            'client_id'  => $filters['client_id'],
             'start_year' => $filters['start_year'],
-            'data' => $data,
-            'pages' => $pages,
-            'clients' => $clients,
+            'data'       => $data,
+            'pages'      => $pages,
+            'clients'    => $clients,
+            'all_users'  => $all_users,
         ]);
     }
 
     /**
-     * Affiche le détail d'un projet.
-     * Cette méthode récupère l'ID du projet depuis les paramètres de la requête
-     * et affiche les détails du projet correspondant.
-     * 
+     * Supprime un projet.
+     *
      * @return void
      */
     public function deleteProject()
@@ -125,7 +140,7 @@ class ProjectController extends BaseController
      * Elle récupère l'ID du projet à mettre à jour depuis les données POST,
      * hydrate l'objet Projet avec les nouvelles données,
      * et enregistre les modifications dans la base de données.
-     * 
+     *
      * @return void
      */
     public function updateProject()
@@ -158,16 +173,61 @@ class ProjectController extends BaseController
     }
 
     /**
-     * Gère la soumission du formulaire de création de projets.
-     * 
-     * Liste des champs attendu dans le formulaire :
-     * 
-     * - project_name : text - obligatoire - Nom du projet
-     * - project_description : text - optionnel - Description du projet
-     * - project_resource : number - optionnel - Ressources allouées au projet
-     * - project_start : date - optionnel - Date de début du projet
-     * - project_end : date - optionnel - Date de fin du projet
-     * - project_status : string - optionnel - Etat du projet (ENUM)
+     * Assigne un utilisateur à un projet (appel AJAX).
+     *
+     * @return void
+     */
+    public function assignUser()
+    {
+        if (!CsrfService::isValid()) {
+            ErrorKernel::throwHttpError(403, "Token CSRF invalide.");
+        }
+
+        if (!$this::requestIsAjax()) {
+            ErrorKernel::throwHttpError(403, "Accès interdit.");
+        }
+
+        $project_id = $_POST['project_id'] ?? null;
+        $user_id    = $_POST['user_id'] ?? null;
+
+        if (!$project_id || !$user_id) {
+            ErrorKernel::throwHttpError(400, "project_id et user_id sont requis.");
+        }
+
+        (new ProjectManager())->assignUser((int)$project_id, (int)$user_id);
+
+        $this->getIndex();
+    }
+
+    /**
+     * Retire un utilisateur d'un projet (appel AJAX).
+     *
+     * @return void
+     */
+    public function unassignUser()
+    {
+        if (!CsrfService::isValid()) {
+            ErrorKernel::throwHttpError(403, "Token CSRF invalide.");
+        }
+
+        if (!$this::requestIsAjax()) {
+            ErrorKernel::throwHttpError(403, "Accès interdit.");
+        }
+
+        $project_id = $_POST['project_id'] ?? null;
+        $user_id    = $_POST['user_id'] ?? null;
+
+        if (!$project_id || !$user_id) {
+            ErrorKernel::throwHttpError(400, "project_id et user_id sont requis.");
+        }
+
+        (new ProjectManager())->unassignUser((int)$project_id, (int)$user_id);
+
+        $this->getIndex();
+    }
+
+    /**
+     * Gère la création d'un projet.
      *
      * @return void
      */
