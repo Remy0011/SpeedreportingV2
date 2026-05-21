@@ -75,7 +75,7 @@ class ProjectController extends BaseController
         $all_users = [];
         foreach ($all_users_raw as $user_row) {
             $user = new User($user_row);
-            if ($user->getId() !== 0) {
+            if ($user->getId(raw: true) !== 0) {
                 $all_users[$user->getId()] = $user;
             }
         }
