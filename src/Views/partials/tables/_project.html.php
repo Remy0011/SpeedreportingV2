@@ -3,7 +3,8 @@
 use Src\Models\Enums\Status\ProjectStatus;
 
 ?>
-<div data-update="/update/projets" data-delete="/delete/projets" data-create="/projets">
+<div data-update="/update/projets" data-delete="/delete/projets" data-create="/projets"
+     data-assign="/assign/projets" data-unassign="/unassign/projets">
     <form action="">
         <div class="top-bar">
             <div class="filter-container">
@@ -12,28 +13,30 @@ use Src\Models\Enums\Status\ProjectStatus;
                 <div class="input-container">
                     <label for="search">Rechercher par nom de projet :</label>
                     <input type="text" id="search" name="search" placeholder="Ex : Application de gestion santé"
-                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>">
-                </div>
-
-                <!-- Client -->
-                <div class="input-container">
-                    <label for="client_id">Client :</label>
-                    <select id="client_id" name="client_id">
-                        <option value="">-- Tous les clients --</option>
-                        <?php foreach ($clients as $client): ?>
-                            <option value="<?= $client->getId(); ?>"
-                                <?= ($client_id ?? null) == $client->getId() ? 'selected' : ''; ?>>
-                                <?= $client->getName(); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                        value="<?= htmlspecialchars($search ?? '', ENT_QUOTES); ?>"
+                        list="projects-suggestions"
+                        autocomplete="off"
+                        oninput="clearTimeout(this._t); this._t = setTimeout(() => this.form.submit(), 400)">
+                    <datalist id="projects-suggestions">
+                        <?php
+                        $seen = [];
+                        foreach ($data as $row_data):
+                            $name = $row_data['project']->getName();
+                            if (!in_array($name, $seen)):
+                                $seen[] = $name;
+                        ?>
+                            <option value="<?= htmlspecialchars($name, ENT_QUOTES); ?>">
+                        <?php
+                            endif;
+                        endforeach; ?>
+                    </datalist>
                 </div>
 
                 <!-- Statut -->
                 <div class="input-container">
                     <label for="status">Statut :</label>
                     <?php $currentStatus = $_GET['status'] ?? ''; ?>
-                    <select id="status" name="status">
+                    <select id="status" name="status" onchange="this.form.submit()">
                         <option value="">-- Tous les statuts --</option>
                         <?php foreach (ProjectStatus::getEnumOptions() as $status => $label): ?>
                             <option value="<?= $status; ?>" <?= $currentStatus === $status ? 'selected' : ''; ?>>
@@ -47,18 +50,17 @@ use Src\Models\Enums\Status\ProjectStatus;
                 <div class="input-container">
                     <label for="start_year">Année de début:</label>
                     <input type="number" id="start_year" name="start_year" placeholder="Ex: 2025" min="2000" max="2250" step="1"
-                        value="<?= htmlspecialchars($start_year ?? '', ENT_QUOTES); ?>">
+                        value="<?= htmlspecialchars($start_year ?? '', ENT_QUOTES); ?>" onchange="this.form.submit()">
                 </div>
 
                 <!-- Bouton -->
                 <button type="submit" class="button primary">Filtrer</button>
+                <a href="?">Réinitialiser</a>
 
                 <div class="container-btn-create">
-                    <a href="#" class="button secondary" data-modal="create">Créer</a>
+                    <a href="#" data-modal="create">Créer</a>
                 </div>
             </div>
-
-            
         </div>
     </form>
 
@@ -67,7 +69,7 @@ use Src\Models\Enums\Status\ProjectStatus;
             <tr>
                 <th>Nom</th>
                 <th>Volume d'heures</th>
-                <th>Ressources humaine</th>
+                <th>Ressources humaines</th>
                 <th>État</th>
                 <th>Progression</th>
                 <th class="action">
@@ -87,7 +89,7 @@ use Src\Models\Enums\Status\ProjectStatus;
                     <tr>
                         <td><?= $row_data['project']->getName(); ?></td>
                         <td><?= $row_data['project']->getResource(); ?></td>
-                        <td><?= $row_data['project']->getDev(); ?></td>
+                        <td><?= count($row_data['users']); ?> développeur<?= count($row_data['users']) > 1 ? 's' : ''; ?></td>
                         <td>
                             <div class="tag <?= ProjectStatus::getColor($row_data['project']->getStatus()) ?>">
                                 <?= $row_data['project']->getStatus(fr: true); ?>
@@ -99,8 +101,7 @@ use Src\Models\Enums\Status\ProjectStatus;
                             $color = '#28a745';
                             ?>
                             <div class="progress-bar-container">
-                                <div class="progress-bar" style="width: <?= $progress ?>%; background-color: <?= $color ?>;">
-                                </div>
+                                <div class="progress-bar" style="width: <?= $progress ?>%; background-color: <?= $color ?>;"></div>
                             </div>
                             <small><?= $progress ?>%</small><br>
                             <small><?= $row_data['progression']['workedHours'] ?>h / <?= $row_data['progression']['resourceHours'] ?>h</small>
@@ -122,22 +123,73 @@ use Src\Models\Enums\Status\ProjectStatus;
     <?php require __DIR__ . '/_pagination.html.php'; ?>
 
     <div class="modals">
-        <?php foreach ($data as $id => $row_data): ?>
+        <?php foreach ($data as $id => $row_data):
+            $assignedUserIds = array_column($row_data['users'], 'user_id');
+            $availableUsersCount = max(0, count($all_users) - count($row_data['users']));
+        ?>
+
             <?php require __DIR__ . '/../modals/read/_top.html.php'; ?>
+            <div class="project-stats-summary">
+            <?php
+                $progress = (int) $row_data['progression']['progression'];
+                $worked   = $row_data['progression']['workedHours'];
+                $total    = $row_data['progression']['resourceHours'];
+                $color    = '#28a745';
+            ?>
+                <div>
+                    <h3 class="summary-title">Volume d'heures</h3>
+                    <p class="summary-content"><?= $row_data['project']->getResource(); ?>h</p>
+                </div>
+                <div>
+                    <h3 class="summary-title">Progression</h3>
+                    <p class="summary-content"><?= $progress ?>%</p>
+                </div>
+                <div>
+                    <h3 class="summary-title">Heures réalisées</h3>
+                    <p class="summary-content"><?= $worked ?>h</p>
+                </div>
+                <div>
+                    <h3 class="summary-title">État</h3>
+                    <p class="tag <?= ProjectStatus::getColor($row_data['project']->getStatus()) ?> summary-content">
+                        <?= $row_data['project']->getStatus(fr: true);?>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Ressources humaines — modale lecture -->
+            <div>
+                <h3 class="human-ressources"><span class="bx bx-group"></span>Ressources humaines</h3>
+                <div class="assigned">
+                    <h4 class="assigned-title">
+                        <span class="bx bx-check"></span>
+                        Assignés (<?= count($row_data['users']); ?>)
+                    </h4>
+                    <?php if (empty($row_data['users'])): ?>
+                        <p>Aucun développeur assigné.</p>
+                    <?php else: ?>
+                        <ul class="user-list">
+                            <?php foreach ($row_data['users'] as $u): ?>
+                                <li class="user-item">
+                                    <?php if (!empty($u['user_picture'])): ?>
+                                        <img src="<?= htmlspecialchars($u['user_picture']); ?>"
+                                             alt="<?= htmlspecialchars($u['user_firstname'] . ' ' . $u['user_lastname']); ?>"
+                                             class="user-avatar">
+                                    <?php endif; ?>
+                                    <span class="user-name">
+                                        <?= htmlspecialchars($u['user_firstname'] . ' ' . $u['user_lastname']); ?>
+                                    </span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <p><strong>Nom :</strong> <?= $row_data['project']->getName(); ?></p>
             <p><strong>Client :</strong> <?= $row_data['client']->getName(); ?></p>
             <p><strong>Description:</strong>
                 <?= !empty($row_data['project']->getDescription()) ? $row_data['project']->getDescription() : 'Non renseignée'; ?>
             </p>
-            <p><strong>Volume d'heures :</strong> <?= $row_data['project']->getResource(); ?>h</p>
-            <p><strong>Ressources humaines :</strong> <?= $row_data['project']->getDev(); ?> développeurs</p>
-            <p><strong>État :</strong> <?= $row_data['project']->getStatus(fr: true); ?></p>
-            <?php
-            $progress = (int) $row_data['progression']['progression'];
-            $worked = $row_data['progression']['workedHours'];
-            $total = $row_data['progression']['resourceHours'];
-            $color = '#28a745';
-            ?>
             <p><strong>Progression :</strong></p>
             <div class="progress-bar-container" style="margin-bottom: 0.25rem;">
                 <div class="progress-bar" style="width: <?= $progress ?>%; background-color: <?= $color ?>;"></div>
@@ -150,11 +202,89 @@ use Src\Models\Enums\Status\ProjectStatus;
             <p><strong>Créé le :</strong> <?= $row_data['project']->getCreation(); ?></p>
             <?php require __DIR__ . '/../modals/read/_bottom.html.php'; ?>
 
+
             <?php require __DIR__ . '/../modals/edit/_top.html.php'; ?>
+
+            <!-- Ressources humaines — modale édition -->
+            <div>
+                <h3 class="human-ressources"><span class="bx bx-group"></span>Ressources humaines</h3>
+                <div class="human-ressources-section">
+
+                    <!-- Colonne : développeurs assignés -->
+                    <div class="assigned">
+                        <h4 class="assigned-title">
+                            <span class="bx bx-user-minus"></span>
+                            Assignés (<?= count($row_data['users']); ?>)
+                        </h4>
+                        <?php if (empty($row_data['users'])): ?>
+                            <p>Aucun développeur assigné.</p>
+                        <?php else: ?>
+                            <ul class="user-list">
+                                <?php foreach ($row_data['users'] as $u): ?>
+                                    <li class="user-item">
+                                        <?php if (!empty($u['user_picture'])): ?>
+                                            <img src="<?= htmlspecialchars($u['user_picture']); ?>"
+                                                 alt="<?= htmlspecialchars($u['user_firstname'] . ' ' . $u['user_lastname']); ?>"
+                                                 class="user-avatar">
+                                        <?php endif; ?>
+                                        <span class="user-name">
+                                            <?= htmlspecialchars($u['user_firstname'] . ' ' . $u['user_lastname']); ?>
+                                        </span>
+                                        <!-- Bouton retirer : envoie un appel AJAX via data-unassign -->
+                                        <button type="button"
+                                                class="button danger minimal btn-unassign"
+                                                data-project-id="<?= $row_data['project']->getId(); ?>"
+                                                data-user-id="<?= (int)$u['user_id']; ?>"
+                                                title="Retirer du projet">
+                                            <i class="bx bx-user-minus"></i>
+                                        </button>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Colonne : développeurs disponibles -->
+                    <div class="available">
+                        <h4 class="available-title">
+                            <span class="bx bx-user-plus"></span>
+                            Disponibles (<?= $availableUsersCount; ?>)
+                        </h4>
+                        <?php if ($availableUsersCount === 0): ?>
+                            <p>Aucun utilisateur disponible.</p>
+                        <?php else: ?>
+                            <ul class="user-list">
+                                <?php foreach ($all_users as $uid => $user):
+                                    if (in_array($uid, $assignedUserIds)) continue; ?>
+                                    <li class="user-item">
+                                        <?php if (!empty($user->getPicture())): ?>
+                                            <img src="<?= htmlspecialchars($user->getPicture()); ?>"
+                                                 alt="<?= htmlspecialchars($user->getFirstname() . ' ' . $user->getLastname()); ?>"
+                                                 class="user-avatar">
+                                        <?php endif; ?>
+                                        <span class="user-name">
+                                            <?= htmlspecialchars($user->getFirstname() . ' ' . $user->getLastname()); ?>
+                                        </span>
+                                        <!-- Bouton assigner : envoie un appel AJAX via data-assign -->
+                                        <button type="button"
+                                                class="button primary minimal btn-assign"
+                                                data-project-id="<?= $row_data['project']->getId(); ?>"
+                                                data-user-id="<?= $uid; ?>"
+                                                title="Assigner au projet">
+                                            <i class="bx bx-user-plus"></i>
+                                        </button>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </div>
+
+                </div>
+            </div>
+
             <div class="input-container">
                 <label for="project_name">Nom :</label>
-                <input type="text" id="project_name" name="project_name" value="<?= $row_data['project']->getName(); ?>"
-                    required>
+                <input type="text" id="project_name" name="project_name" value="<?= $row_data['project']->getName(); ?>" required>
             </div>
             <div class="input-container">
                 <label for="project_description">Description :</label>
@@ -166,11 +296,6 @@ use Src\Models\Enums\Status\ProjectStatus;
                 <label for="project_resource">Volume d'heures :</label>
                 <input type="number" id="project_resource" name="project_resource" min="0" step="0.5"
                     value="<?= $row_data['project']->getResource(); ?>">
-            </div>
-            <div class="input-container">
-                <label for="project_dev">Ressources humaines :</label>
-                <input type="number" id="project_dev" name="project_dev" min="0" step="0.5"
-                    value="<?= $row_data['project']->getDev(); ?>">
             </div>
             <div class="input-container">
                 <label for="project_start">Départ de départ prévue le:</label>
@@ -196,11 +321,13 @@ use Src\Models\Enums\Status\ProjectStatus;
             <input type="hidden" name="page" value="<?= $pages['current_page']; ?>">
             <?php require __DIR__ . '/../modals/edit/_bottom.html.php'; ?>
 
+
             <?php require __DIR__ . '/../modals/delete/_top.html.php'; ?>
             <input type="hidden" name="project_id" value="<?= $row_data['project']->getId(); ?>">
             <input type="hidden" name="page" value="<?= $pages['current_page']; ?>">
-        <?php require __DIR__ . '/../modals/delete/_bottom.html.php';
-        endforeach; ?>
+            <?php require __DIR__ . '/../modals/delete/_bottom.html.php'; ?>
+
+        <?php endforeach; ?>
 
         <?php require __DIR__ . '/../modals/create/_top.html.php'; ?>
         <div class="input-container">
@@ -215,13 +342,6 @@ use Src\Models\Enums\Status\ProjectStatus;
         <div class="input-container">
             <label for="project_resource">Temps prévu (en heures travaillées) :</label>
             <input type="number" id="project_resource" name="project_resource" min="0" step="0.5" value="0">
-        </div>
-        <div class="input-container">
-            <label for="project_dev">Ressources (en développeurs associées) :</label>
-            <input aria-describedby="project_dev_desc" type="number" id="project_dev" name="project_dev"
-                min="0" step="1" value="0">
-            <small id="project_dev_desc">Nombre de développeurs associés au projet. Permets de calculer des données
-                à afficher dans le dashboard.</small>
         </div>
         <div class="input-container">
             <label for="project_start">Départ prévue le :</label>
@@ -243,6 +363,10 @@ use Src\Models\Enums\Status\ProjectStatus;
                 </optgroup>
             </select>
         </div>
+        <p class="text-muted">
+            <span class="bx bx-info-circle"></span>
+            Les développeurs pourront être assignés après la création du projet.
+        </p>
         <?php require __DIR__ . '/../modals/create/_bottom.html.php'; ?>
     </div>
 </div>

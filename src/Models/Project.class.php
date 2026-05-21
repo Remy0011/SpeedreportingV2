@@ -19,7 +19,6 @@ class Project extends BaseModel
     private ?string $description;
     private ?string $status;
     private ?float $resource;
-    private ?int $dev;
     private ?int $client;
 
     public function getColNames(): array
@@ -34,7 +33,6 @@ class Project extends BaseModel
             'status',
             'resource',
             'client',
-            'dev'
         ];
     }
 
@@ -55,7 +53,6 @@ class Project extends BaseModel
         $this->setClient(null);
         $this->setCreation(null);
         $this->setStatus(null);
-        $this->setDev(null);
 
         $this->hydrate($data);
     }
@@ -222,19 +219,6 @@ class Project extends BaseModel
     {
         if (!is_null($this->client)) {
             return $raw ? $this->client : htmlspecialchars($this->client);
-        }
-        return 0;
-    }
-
-    // ----- DEV -----
-    public function setDev(?int $value): void
-    {
-        $this->dev = $value;
-    }
-    public function getDev($raw = false): int
-    {
-        if (!is_null($this->dev)) {
-            return $raw ? $this->dev : htmlspecialchars($this->dev);
         }
         return 0;
     }

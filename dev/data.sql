@@ -61,7 +61,6 @@ CREATE TABLE IF NOT EXISTS `table_project` (
   `project_name` varchar(100) DEFAULT NULL,
   `project_description` varchar(255) DEFAULT NULL,
   `project_resource` decimal(7,2) DEFAULT NULL,
-  `project_dev` int DEFAULT NULL,
   `project_creation` datetime DEFAULT CURRENT_TIMESTAMP,
   `project_start` date DEFAULT NULL,
   `project_end` date DEFAULT NULL,
@@ -130,7 +129,7 @@ CREATE TABLE IF NOT EXISTS `table_user` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `table_user_preference`
+-- Structure de la table `table_user_preferences`
 --
 
 DROP TABLE IF EXISTS `table_user_preferences`;

@@ -168,6 +168,12 @@ $router->addRoute('/update/projets', 'POST', function () {
 $router->addRoute('/delete/projets', 'POST', function () {
     (new ProjectController())->deleteProject();
 }, [ADMIN]);
+$router->addRoute('/assign/projets', 'POST', function () {
+    (new ProjectController())->assignUser();
+}, [ADMIN]);
+$router->addRoute('/unassign/projets', 'POST', function () {
+    (new ProjectController())->unassignUser();
+}, [ADMIN]);
 
 // CLIENTS (ADMIN)
 $router->addRoute('/clients', 'GET', function () {

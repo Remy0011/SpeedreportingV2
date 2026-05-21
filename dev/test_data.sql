@@ -117,20 +117,22 @@ INSERT IGNORE INTO `table_log` (`log_action`, `log_detail`, `log_date`, `log_use
 ("Consultation des rapports", "L'utilisateur 6 a consulté les rapports mensuels.", "2025-04-29 13:00:00", 6),
 ("Déconnexion", "L'utilisateur 6 a quitté le système.", "2025-04-29 16:45:00", 6);
 
-INSERT IGNORE INTO `table_project` (`project_name`, `project_description`, `project_resource`, `project_dev`, `project_start`, `project_end`, `project_status`, `project_client`) VALUES
-("Développement du site web", "Création d'un site web responsive pour un client", 1200.00, 3, "2025-03-01", "2025-11-30", "en_cours", 3),
-("Application mobile de gestion", "Développement d'une application mobile pour la gestion de projet", 800.00, 2, "2024-07-01", "2025-01-31", "termine", 5),
-("Refonte de la plateforme e-commerce", "Refonte d'une plateforme de e-commerce en ligne avec une nouvelle interface utilisateur", 1500.00, 5, "2025-02-15", "2025-10-15", "en_cours", 5),
-("Système de gestion de stock", "Mise en place d'un système de gestion de stock automatisé pour une grande surface", 500.00, 2, "2024-08-01", "2024-12-31", "annule", 3),
-("Migration de données vers le cloud", "Migration des données d'un client vers une infrastructure cloud sécurisée", 300.00, 1, "2025-04-01", "2025-06-30", "en_cours", 4),
-("Développement d'un système de CRM", "Création d'un CRM pour améliorer la gestion des relations clients", 1200.00, 5, "2025-05-01", "2025-09-01", "en_cours", 6),
-("Site web pour restaurant", "Développement d'un site web pour la commande en ligne et la gestion de menus d'un restaurant", 600.00, 5, "2024-09-15", "2025-02-15", "termine", 7),
-("Application de gestion de santé", "Création d'une application mobile pour la gestion des dossiers médicaux et des rendez-vous", 1500.00, 8, "2025-01-10", "2025-04-10", "en_cours", 8),
-("Automatisation des processus bancaires", "Mise en place d'un système d'automatisation des processus bancaires pour une banque", 2000.00, 10, "2024-07-01", "2024-12-31", "annule", 9),
-("Application de suivi de performance sportive", "Développement d'une application mobile pour suivre les performances sportives et les objectifs de fitness", 800.00, 2, "2025-03-20", "2025-07-15", "en_cours", 10),
-("Plateforme de e-learning", "Création d'une plateforme en ligne pour l'apprentissage à distance", 1100.00, 5, "2025-06-01", "2025-10-01", "en_cours", 11),
-("Outil de gestion de la chaîne logistique", "Développement d'un outil pour la gestion de la chaîne logistique d'une entreprise", 1600.00, 6, "2024-10-01", "2025-03-31", "termine", 6),
-("Application de réalité augmentée", "Création d'une application mobile utilisant la réalité augmentée pour le secteur immobilier", 1800.00, 7, "2025-05-15", "2025-09-30", "en_cours", 4);
+-- Insertion des données dans la table "table_project"
+-- (project_dev supprimé — les associations sont gérées par table_project_user)
+INSERT IGNORE INTO `table_project` (`project_name`, `project_description`, `project_resource`, `project_start`, `project_end`, `project_status`, `project_client`) VALUES
+("Développement du site web", "Création d'un site web responsive pour un client", 1200.00, "2025-03-01", "2025-11-30", "en_cours", 3),
+("Application mobile de gestion", "Développement d'une application mobile pour la gestion de projet", 800.00, "2024-07-01", "2025-01-31", "termine", 5),
+("Refonte de la plateforme e-commerce", "Refonte d'une plateforme de e-commerce en ligne avec une nouvelle interface utilisateur", 1500.00, "2025-02-15", "2025-10-15", "en_cours", 5),
+("Système de gestion de stock", "Mise en place d'un système de gestion de stock automatisé pour une grande surface", 500.00, "2024-08-01", "2024-12-31", "annule", 3),
+("Migration de données vers le cloud", "Migration des données d'un client vers une infrastructure cloud sécurisée", 300.00, "2025-04-01", "2025-06-30", "en_cours", 4),
+("Développement d'un système de CRM", "Création d'un CRM pour améliorer la gestion des relations clients", 1200.00, "2025-05-01", "2025-09-01", "en_cours", 6),
+("Site web pour restaurant", "Développement d'un site web pour la commande en ligne et la gestion de menus d'un restaurant", 600.00, "2024-09-15", "2025-02-15", "termine", 7),
+("Application de gestion de santé", "Création d'une application mobile pour la gestion des dossiers médicaux et des rendez-vous", 1500.00, "2025-01-10", "2025-04-10", "en_cours", 8),
+("Automatisation des processus bancaires", "Mise en place d'un système d'automatisation des processus bancaires pour une banque", 2000.00, "2024-07-01", "2024-12-31", "annule", 9),
+("Application de suivi de performance sportive", "Développement d'une application mobile pour suivre les performances sportives et les objectifs de fitness", 800.00, "2025-03-20", "2025-07-15", "en_cours", 10),
+("Plateforme de e-learning", "Création d'une plateforme en ligne pour l'apprentissage à distance", 1100.00, "2025-06-01", "2025-10-01", "en_cours", 11),
+("Outil de gestion de la chaîne logistique", "Développement d'un outil pour la gestion de la chaîne logistique d'une entreprise", 1600.00, "2024-10-01", "2025-03-31", "termine", 6),
+("Application de réalité augmentée", "Création d'une application mobile utilisant la réalité augmentée pour le secteur immobilier", 1800.00, "2025-05-15", "2025-09-30", "en_cours", 4);
 
 -- Insertion des données dans la table "table_user"
 INSERT IGNORE INTO `table_user` (`user_email`, `user_firstname`, `user_lastname`, `user_password`, `user_picture`, `user_status`, `user_role`) VALUES
@@ -140,6 +142,43 @@ INSERT IGNORE INTO `table_user` (`user_email`, `user_firstname`, `user_lastname`
 ("user3@example.com", "Bob", "Johnson", "$2y$10$ypl8VXARTllthGi23v75lOiu.O8S8h2a7PHTEejRHr1YYa9wV0qVG", "https://api.dicebear.com/9.x/identicon/svg?row1=xxxxx&row2=xxoxx&row3=oxoxo&row4=oxoxo&row5=xooox&size=100&scale=75&backgroundColor=F5EEF8&rowColor=FADBD8", "confirme", 2),
 ("user4@example.com", "Charlie", "Williams", "$2y$10$ypl8VXARTllthGi23v75lOiu.O8S8h2a7PHTEejRHr1YYa9wV0qVG", "https://api.dicebear.com/9.x/identicon/svg?row1=xooox&row2=xxoxx&row3=ooxoo&row4=ooxoo&row5=ooxoo&size=100&scale=75&backgroundColor=FDEDEC&rowColor=4DB6AC", "confirme", 2),
 ("user5@example.com", "David", "Miller", "$2y$10$ypl8VXARTllthGi23v75lOiu.O8S8h2a7PHTEejRHr1YYa9wV0qVG", "https://api.dicebear.com/9.x/identicon/svg?row1=xxxxx&row2=ooxoo&row3=xxxxx&row4=xoxox&row5=xoxox&size=100&scale=75&backgroundColor=E57373&rowColor=FBF5E6", "confirme", 2);
+
+-- --------------------------------------------------------
+--
+-- Associations utilisateurs ↔ projets (table_project_user)
+-- IDs utilisateurs : 2=John, 3=Jane, 4=Alice, 5=Bob, 6=Charlie, 7=David
+-- IDs projets      : 4=Site web, 5=App mobile, 6=E-commerce, 7=Stock,
+--                    8=Cloud, 9=CRM, 10=Restaurant, 11=Santé,
+--                    12=Bancaire, 13=Sportive, 14=E-learning,
+--                    15=Logistique, 16=AR
+--
+INSERT IGNORE INTO `table_project_user` (`project_user_user_id`, `project_user_project_id`) VALUES
+-- Projet 4 : Développement du site web (3 devs)
+(2, 4), (3, 4), (4, 4),
+-- Projet 5 : Application mobile de gestion (2 devs)
+(3, 5), (4, 5),
+-- Projet 6 : Refonte e-commerce (5 devs)
+(2, 6), (3, 6), (4, 6), (5, 6), (6, 6),
+-- Projet 7 : Gestion de stock (2 devs)
+(4, 7), (5, 7),
+-- Projet 8 : Migration cloud (1 dev)
+(2, 8),
+-- Projet 9 : CRM (5 devs)
+(2, 9), (3, 9), (4, 9), (5, 9), (6, 9),
+-- Projet 10 : Site web restaurant (5 devs)
+(2, 10), (3, 10), (4, 10), (5, 10), (6, 10),
+-- Projet 11 : Application santé (6 devs)
+(2, 11), (3, 11), (4, 11), (5, 11), (6, 11), (7, 11),
+-- Projet 12 : Automatisation bancaire (6 devs)
+(2, 12), (3, 12), (4, 12), (5, 12), (6, 12), (7, 12),
+-- Projet 13 : Suivi performance sportive (2 devs)
+(3, 13), (7, 13),
+-- Projet 14 : Plateforme e-learning (5 devs)
+(2, 14), (3, 14), (4, 14), (5, 14), (6, 14),
+-- Projet 15 : Chaîne logistique (6 devs)
+(2, 15), (3, 15), (4, 15), (5, 15), (6, 15), (7, 15),
+-- Projet 16 : Réalité augmentée (6 devs)
+(2, 16), (3, 16), (4, 16), (5, 16), (6, 16), (7, 16);
 
 -- Insertion des données dans la table "table_work"
 INSERT INTO `table_work` (`work_count`, `work_week`, `work_year`, `work_day`, `work_creation`, `work_description`, `work_status`, `work_project`, `work_user`) VALUES
