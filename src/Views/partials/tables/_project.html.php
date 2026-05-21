@@ -125,6 +125,7 @@ use Src\Models\Enums\Status\ProjectStatus;
     <div class="modals">
         <?php foreach ($data as $id => $row_data):
             $assignedUserIds = array_column($row_data['users'], 'user_id');
+            $availableUsersCount = max(0, count($all_users) - count($row_data['users']));
         ?>
 
             <?php require __DIR__ . '/../modals/read/_top.html.php'; ?>
@@ -247,31 +248,35 @@ use Src\Models\Enums\Status\ProjectStatus;
                     <div class="available">
                         <h4 class="available-title">
                             <span class="bx bx-user-plus"></span>
-                            Disponibles (<?= count($all_users) - count($row_data['users']); ?>)
+                            Disponibles (<?= $availableUsersCount; ?>)
                         </h4>
-                        <ul class="user-list">
-                            <?php foreach ($all_users as $uid => $user):
-                                if (in_array($uid, $assignedUserIds)) continue; ?>
-                                <li class="user-item">
-                                    <?php if (!empty($user->getPicture())): ?>
-                                        <img src="<?= htmlspecialchars($user->getPicture()); ?>"
-                                             alt="<?= htmlspecialchars($user->getFirstname() . ' ' . $user->getLastname()); ?>"
-                                             class="user-avatar">
-                                    <?php endif; ?>
-                                    <span class="user-name">
-                                        <?= htmlspecialchars($user->getFirstname() . ' ' . $user->getLastname()); ?>
-                                    </span>
-                                    <!-- Bouton assigner : envoie un appel AJAX via data-assign -->
-                                    <button type="button"
-                                            class="button primary minimal btn-assign"
-                                            data-project-id="<?= $row_data['project']->getId(); ?>"
-                                            data-user-id="<?= $uid; ?>"
-                                            title="Assigner au projet">
-                                        <i class="bx bx-user-plus"></i>
-                                    </button>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
+                        <?php if ($availableUsersCount === 0): ?>
+                            <p>Aucun utilisateur disponible.</p>
+                        <?php else: ?>
+                            <ul class="user-list">
+                                <?php foreach ($all_users as $uid => $user):
+                                    if (in_array($uid, $assignedUserIds)) continue; ?>
+                                    <li class="user-item">
+                                        <?php if (!empty($user->getPicture())): ?>
+                                            <img src="<?= htmlspecialchars($user->getPicture()); ?>"
+                                                 alt="<?= htmlspecialchars($user->getFirstname() . ' ' . $user->getLastname()); ?>"
+                                                 class="user-avatar">
+                                        <?php endif; ?>
+                                        <span class="user-name">
+                                            <?= htmlspecialchars($user->getFirstname() . ' ' . $user->getLastname()); ?>
+                                        </span>
+                                        <!-- Bouton assigner : envoie un appel AJAX via data-assign -->
+                                        <button type="button"
+                                                class="button primary minimal btn-assign"
+                                                data-project-id="<?= $row_data['project']->getId(); ?>"
+                                                data-user-id="<?= $uid; ?>"
+                                                title="Assigner au projet">
+                                            <i class="bx bx-user-plus"></i>
+                                        </button>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
                     </div>
 
                 </div>

@@ -72,7 +72,7 @@
 .human-ressources-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 12px;
 }
 
 .human-ressources {
@@ -125,8 +125,9 @@
 .user-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
+  gap: 8px;
+  min-height: 34px;
+  padding: 4px 8px;
   border-radius: var(--radius);
   transition: background .15s;
 }
@@ -136,8 +137,8 @@
 }
 
 .user-avatar {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: 0.5px solid var(--color-t);
   flex-shrink: 0;
@@ -145,8 +146,28 @@
 }
 
 .user-name {
-  font-size: 14px;
+  font-size: 13px;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-assign,
+.btn-unassign {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-assign i,
+.btn-unassign i {
+  font-size: 16px;
 }
 
 .text-muted {

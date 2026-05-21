@@ -163,6 +163,69 @@ function handleAsyncAction(selector, attr, successCallback) {
  * @param {string} selector - Le sélecteur des boutons pour ouvrir les modales
  * @returns {void}
  */
+function handleProjectUserAction(selector, attr) {
+    document.querySelectorAll(selector).forEach(button => {
+        if (button.classList.contains('async-bound')) return;
+
+        button.classList.add('async-bound');
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            const container = button.closest(`[${attr}]`);
+            const form = button.closest('form');
+            const modal = button.closest('.modal');
+            const url = container?.getAttribute(attr);
+            const projectId = button.dataset.projectId;
+            const userId = button.dataset.userId;
+
+            if (!container || !url || !projectId || !userId) return;
+
+            const formData = new FormData();
+            formData.append('project_id', projectId);
+            formData.append('user_id', userId);
+
+            const page = form?.querySelector('input[name="page"]')?.value;
+            if (page) formData.append('page', page);
+
+            const csrf = form?.querySelector('input[name="_csrf_token"]');
+            if (csrf) formData.append(csrf.name, csrf.value);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'FetchRequest' },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Erreur de chargement');
+
+                const html = await response.text();
+                const modalId = modal?.id;
+                container.outerHTML = html;
+
+                bindModalEvents();
+                adaptTableSize();
+                bindPagination();
+
+                const refreshedModal = modalId ? document.getElementById(modalId) : null;
+                if (refreshedModal) {
+                    refreshedModal.classList.add('show');
+                    document.body.classList.add("modal-open");
+                }
+
+                showToast("Ressources humaines mises a jour.", "success");
+            } catch (err) {
+                console.error(err);
+                showToast("Erreur lors de la mise a jour des ressources.", "error");
+            }
+        });
+    });
+}
+
+/**
+ * @description Lie les evenements des modales, des sliders et des actions asynchrones
+ * @returns {void}
+ */
 export function bindModalEvents() {
     document.querySelectorAll('[data-modal]').forEach(button => {
         button.addEventListener('click', () => {
@@ -221,6 +284,8 @@ export function bindModalEvents() {
     handleAsyncAction('.confirm-delete', 'data-delete');
     handleAsyncAction('.confirm-create', 'data-create');
     handleAsyncAction('.confirm-validate', 'data-validate');
+    handleProjectUserAction('.btn-assign', 'data-assign');
+    handleProjectUserAction('.btn-unassign', 'data-unassign');
 }
 
 /**
@@ -402,4 +467,3 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
-
