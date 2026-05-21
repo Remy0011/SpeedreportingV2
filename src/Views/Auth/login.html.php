@@ -31,7 +31,17 @@ require_once __DIR__ . '/../partials/_top.html.php';
                 </div>
                 <div class="input-container">
                     <label for="password">Mot de Passe</label>
-                    <input type="password" name="password" placeholder="Mot de Passe" required>
+                    <div class="password-input">
+                        <input id="password" type="password" name="password" placeholder="Mot de Passe" required>
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            aria-label="Afficher le mot de passe"
+                            aria-pressed="false"
+                        >
+                            <i class='bx bx-show' aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
                 <a href="/mdp-oublie">Vous avez oublié votre mot de passe ?</a>
                 <div id="message">

@@ -105,6 +105,7 @@
     flex-direction: column;
     padding: 0 30px;
     height: 100%;
+    width: min(320px, 100%);
 }
 
 .login .container input {
@@ -115,7 +116,47 @@
     font-size: 13px;
     border-radius: var(--radius);
     width: 100%;
+    box-sizing: border-box;
     outline: none;
+}
+
+.login .input-container {
+    width: 100%;
+}
+
+.login .password-input {
+    position: relative;
+    width: 100%;
+}
+
+.login .password-input input {
+    padding-right: 44px;
+}
+
+.login .container .password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--text-light);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.login .container .password-toggle:hover,
+.login .container .password-toggle:focus-visible {
+    background-color: var(--color-primary-t);
 }
 
 .login .form-container {
