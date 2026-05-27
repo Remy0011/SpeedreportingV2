@@ -8,6 +8,7 @@ use Src\Controller\AuthController;
 use Src\Controller\ClientController;
 use Src\Controller\DashboardController;
 use Src\Controller\ProjectController;
+use Src\Controller\PlanningController;
 use Src\Controller\UserController;
 use Src\Controller\UserPreferencesController;
 use Src\Controller\WorkController;
@@ -187,6 +188,11 @@ $router->addRoute('/update/clients', 'POST', function () {
 }, [ADMIN]);
 $router->addRoute('/delete/clients', 'POST', function () {
     (new ClientController())->deleteClient();
+}, [ADMIN]);
+
+// PLANNING PRÉVISIONNEL (ADMIN)
+$router->addRoute('/previsionnel', 'GET', function () {
+    (new PlanningController())->getIndex();
 }, [ADMIN]);
 
 // PREFERENCES (USER, ADMIN)
