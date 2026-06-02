@@ -64,7 +64,7 @@ $role = AuthService::getRole()->getId();
                         </li>
                         <li>
                             <a href="/previsionnel">
-                                <i class='bx bx-time-five'></i>
+                                <i class='bx bx-trending-up'></i>
                                 <span class="text">Planning prévisionnel</span>
                             </a>
                         </li>
