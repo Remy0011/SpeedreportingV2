@@ -2,7 +2,6 @@
 
 use Src\Services\AssetService;
 
-AssetService::addStyle(["_sidebar.css", "_breadcrumb.css", "Button.css", "Modal.css", "_settings.css", "_help.css", "Table.css", "Card.css"]);
 AssetService::addScript(["_sidebar.js", "_breadcrumb.js", "_settings.js", "_help.js", "Table.js"]);
 
 $page_title = "Planning prévisionnel";
