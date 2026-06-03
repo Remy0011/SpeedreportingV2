@@ -2,88 +2,10 @@
 
 namespace Src\Controller;
 
-use DateTimeImmutable;
-
 class PlanningController extends BaseController
 {
     public function getIndex(): void
     {
-        $month = isset($_GET['month']) && is_numeric($_GET['month']) ? (int) $_GET['month'] : (int) date('n');
-        $year = isset($_GET['year']) && is_numeric($_GET['year']) ? (int) $_GET['year'] : (int) date('Y');
-
-        if ($month < 1 || $month > 12) {
-            $month = (int) date('n');
-        }
-
-        if ($year < 2020 || $year > 2120) {
-            $year = (int) date('Y');
-        }
-
-        $this::render('Planning/index', $this->generateCalendar($month, $year));
-    }
-
-    private function generateCalendar(int $month, int $year): array
-    {
-        $current = new DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
-        $previous = $current->modify('-1 month');
-        $next = $current->modify('+1 month');
-        $today = new DateTimeImmutable('today');
-
-        $months = [
-            'current' => [
-                'year' => (int) $current->format('Y'),
-                'month' => (int) $current->format('n'),
-                'name' => getFrenchMonthName($current->format('n')),
-            ],
-            'previous' => [
-                'year' => (int) $previous->format('Y'),
-                'month' => (int) $previous->format('n'),
-            ],
-            'next' => [
-                'year' => (int) $next->format('Y'),
-                'month' => (int) $next->format('n'),
-            ],
-            'today' => [
-                'year' => (int) $today->format('Y'),
-                'month' => (int) $today->format('n'),
-            ],
-        ];
-
-        $firstDay = $current;
-        $lastDay = $current->modify('last day of this month');
-        $start = $firstDay->modify('monday this week');
-        $end = $lastDay->modify('sunday this week');
-        $weeks = [];
-
-        for ($weekStart = $start; $weekStart <= $end; $weekStart = $weekStart->modify('+1 week')) {
-            $weekEnd = $weekStart->modify('+6 days');
-            $week = [
-                'number' => (int) $weekStart->format('W'),
-                'year' => (int) $weekStart->format('o'),
-                'range' => $weekStart->format('d/m') . ' - ' . $weekEnd->format('d/m'),
-                'days' => [],
-            ];
-
-            for ($dayOffset = 0; $dayOffset < 7; $dayOffset++) {
-                $date = $weekStart->modify("+{$dayOffset} days");
-                $dayNumber = (int) $date->format('N');
-
-                $week['days'][] = [
-                    'name' => getFrenchDayName($dayNumber),
-                    'number' => (int) $date->format('d'),
-                    'date' => $date->format('Y-m-d'),
-                    'display' => $date->format('d/m'),
-                    'is_current_month' => (int) $date->format('n') === $month,
-                    'is_today' => $date->format('Y-m-d') === $today->format('Y-m-d'),
-                ];
-            }
-
-            $weeks[] = $week;
-        }
-
-        return [
-            'months' => $months,
-            'weeks' => $weeks,
-        ];
+        (new WorkController())->getSelf();
     }
 }
