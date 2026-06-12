@@ -39,8 +39,8 @@ class PlanningController extends BaseController
         }
 
         // Gestion du filtre de projets sélectionnés (persistant en session)
-        if (isset($_GET['projects'])) {
-            $selected_project_ids = array_map('intval', (array) $_GET['projects']);
+        if (isset($_GET['filter_submitted'])) {
+            $selected_project_ids = isset($_GET['projects']) ? array_map('intval', (array) $_GET['projects']) : [];
             $_SESSION['planning_selected_projects'] = $selected_project_ids;
         } elseif (isset($_SESSION['planning_selected_projects'])) {
             $selected_project_ids = $_SESSION['planning_selected_projects'];

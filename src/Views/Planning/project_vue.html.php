@@ -76,7 +76,7 @@ $current_view = htmlspecialchars($view ?? 'projects', ENT_QUOTES);
     </div>
 
     <!-- Filtre des projets affichés -->
-    <details class="project-filter">
+    <details class="project-filter" open>
         <summary>
             Filtrer les projets affichés (<?= count($projects) ?>/<?= count($available_projects) ?>)
         </summary>
@@ -85,6 +85,7 @@ $current_view = htmlspecialchars($view ?? 'projects', ENT_QUOTES);
             <input type="hidden" name="month" value="<?= $months['current']['month'] ?>">
             <input type="hidden" name="year" value="<?= $months['current']['year'] ?>">
             <input type="hidden" name="week" value="<?= $current_week['number'] ?>">
+            <input type="hidden" name="filter_submitted" value="1">
 
             <div class="project-filter-actions">
                 <button type="button" class="button secondary minimal" data-filter-select-all>Tout cocher</button>
@@ -95,6 +96,7 @@ $current_view = htmlspecialchars($view ?? 'projects', ENT_QUOTES);
                 <?php foreach ($available_projects as $project): ?>
                     <label class="project-filter-item">
                         <input type="checkbox" name="projects[]" value="<?= $project->getId() ?>"
+                               onchange="this.form.requestSubmit()"
                                 <?= in_array($project->getId(true), $selected_project_ids, true) ? 'checked' : '' ?>>
                         <?= $project->getName() ?>
                     </label>
@@ -103,8 +105,6 @@ $current_view = htmlspecialchars($view ?? 'projects', ENT_QUOTES);
                     <p>Aucun projet en cours ou en attente.</p>
                 <?php endif; ?>
             </div>
-
-            <button type="submit" class="button primary">Appliquer</button>
         </form>
     </details>
 
@@ -291,12 +291,16 @@ $current_view = htmlspecialchars($view ?? 'projects', ENT_QUOTES);
 <script>
     document.querySelectorAll('.project-filter-form [data-filter-select-all]').forEach(btn => {
         btn.addEventListener('click', () => {
-            btn.closest('.project-filter-form').querySelectorAll('input[name="projects[]"]').forEach(cb => cb.checked = true);
+            const form = btn.closest('.project-filter-form');
+            form.querySelectorAll('input[name="projects[]"]').forEach(cb => cb.checked = true);
+            form.requestSubmit();
         });
     });
     document.querySelectorAll('.project-filter-form [data-filter-select-none]').forEach(btn => {
         btn.addEventListener('click', () => {
-            btn.closest('.project-filter-form').querySelectorAll('input[name="projects[]"]').forEach(cb => cb.checked = false);
+            const form = btn.closest('.project-filter-form');
+            form.querySelectorAll('input[name="projects[]"]').forEach(cb => cb.checked = false);
+            form.requestSubmit();
         });
     });
 </script>
