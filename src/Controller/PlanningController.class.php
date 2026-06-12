@@ -4,6 +4,8 @@ namespace Src\Controller;
 
 use DateTimeImmutable;
 use Src\Managers\ProjectManager;
+use Src\Managers\UserManager;
+use Src\Managers\WorkManager;
 use Src\Models\Project;
 
 
@@ -20,8 +22,10 @@ class PlanningController extends BaseController
 
         $calendarData = $this->generateCalendar($month, $year);
 
+        $projectManager = new ProjectManager();
+
         // Charger les projets en cours
-        $projectsRaw = (new ProjectManager())->getTableData(filters: ['status' => 'en_cours']);
+        $projectsRaw = $projectManager->getTableData(filters: ['status' => 'en_cours']);
         $projects = [];
         foreach ($projectsRaw as $row) {
             $projects[] = new Project($row);
@@ -29,12 +33,45 @@ class PlanningController extends BaseController
 
         // Planning data (vide pour l'instant)
         $planning_data = [];
+        $selectedWeek = $this->getSelectedWeek($calendarData['weeks']);
+        $userRows = [];
+
+        if ($view === 'users') {
+            $users = (new UserManager())->getPlanningUsers();
+            $weeklyLoads = (new WorkManager())->getWeeklyUserLoads($selectedWeek['number'], $selectedWeek['year']);
+
+            foreach ($users as $user) {
+                $userId = (int) $user['user_id'];
+                $userRows[] = [
+                    'id' => $userId,
+                    'name' => trim(($user['user_firstname'] ?? '') . ' ' . ($user['user_lastname'] ?? '')),
+                    'role' => $user['role_fr'] ?? '',
+                    'hours' => $weeklyLoads[$userId] ?? 0.0,
+                ];
+            }
+        }
 
         $this::render('Planning/index', array_merge($calendarData, [
             'projects'     => $projects,
             'planning_data' => $planning_data,
             'view'         => $view,
+            'selected_week' => $selectedWeek,
+            'user_rows'     => $userRows,
         ]));
+    }
+
+    private function getSelectedWeek(array $weeks): array
+    {
+        $selectedWeekNumber = isset($_GET['week']) && is_numeric($_GET['week']) ? (int) $_GET['week'] : ($weeks[0]['number'] ?? (int) date('W'));
+        $selectedWeekYear = isset($_GET['week_year']) && is_numeric($_GET['week_year']) ? (int) $_GET['week_year'] : null;
+
+        foreach ($weeks as $week) {
+            if ($week['number'] === $selectedWeekNumber && ($selectedWeekYear === null || $week['year'] === $selectedWeekYear)) {
+                return $week;
+            }
+        }
+
+        return $weeks[0];
     }
 
     private function generateCalendar(int $month, int $year): array

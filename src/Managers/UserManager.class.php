@@ -241,6 +241,29 @@ class UserManager extends BaseManager
      * @return bool True si l'utilisateur a été supprimé avec succès, sinon false.
      */
 
+    /**
+     * Recupere tous les utilisateurs affichables dans le planning.
+     *
+     * @return array
+     */
+    public function getPlanningUsers(): array
+    {
+        $query = "SELECT user_id, user_email, user_firstname, user_lastname, user_status,
+                user_role, role_fr
+            FROM table_user
+            LEFT JOIN table_role ON table_user.user_role = table_role.role_id
+            WHERE user_id != 0
+            ORDER BY user_lastname ASC, user_firstname ASC";
+
+        try {
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            throw new \Exception("Erreur lors de la recuperation des utilisateurs du planning : " . $e->getMessage());
+        }
+    }
+
     public function deleteUser(int $user_id): bool
     {
         $query = "DELETE FROM table_{$this::$table} WHERE user_id = :user_id";
