@@ -16,12 +16,12 @@ class WorkManager extends BaseManager
      * Retourne une liste paginée des travaux pour affichage dans un tableau.
      * Cette méthode permet de récupérer les données des travaux
      * en fonction de la page et de la limite spécifiées, avec des filtres optionnels.
-     * 
+     *
      * @param int $page Numéro de la page à récupérer (1 par défaut).
      * @param int $limit Nombre de résultats par page (10 par défaut).
      * @param array|null $filters Filtres optionnels pour la recherche (par email, nom, statut, rôle).
      * @throws \Exception
-     * 
+     *
      * @return array Tableau associatif contenant les données des travaux.
      */
     public function getTableData(int $page = 1, int $limit = 10, ?array $filters = []): array
@@ -103,10 +103,10 @@ class WorkManager extends BaseManager
 
     /**
      * Récupère les travaux en cours de création pour un utilisateur donné.
-     * 
+     *
      * @param int $userId
      * @throws \Exception
-     * 
+     *
      * @return array
      */
     public function getInCreationWork(int $userId)
@@ -115,8 +115,63 @@ class WorkManager extends BaseManager
     }
 
     /**
+     * Récupère tous les créneaux de travail (tous utilisateurs) pour un mois et une année donnés.
+     * Utilisé par le planning prévisionnel (vue administrateur).
+     *
+     * @param string $month
+     * @param string $year
+     * @throws \Exception
+     * @return array
+     */
+    public function getMonthWork(string $month, string $year): array
+    {
+        // Calcule les semaines (et leur année ISO) couvertes par le mois demandé
+        $startDate = new \DateTimeImmutable("$year-$month-01");
+        $endDate = $startDate->modify('last day of this month');
+        $weeks = [];
+
+        for ($date = $startDate; $date <= $endDate; $date = $date->modify('+1 day')) {
+            $week = (int) $date->format('W');
+            $weekYear = (int) $date->format('o');
+            $key = $weekYear . '-' . $week;
+            if (!isset($weeks[$key])) {
+                $weeks[$key] = ['week' => $week, 'year' => $weekYear];
+            }
+        }
+
+        if (empty($weeks)) {
+            return [];
+        }
+
+        $wherePairs = [];
+        $params = [];
+        foreach ($weeks as $pair) {
+            $wherePairs[] = '(work_week = ? AND work_year = ?)';
+            $params[] = $pair['week'];
+            $params[] = $pair['year'];
+        }
+        $whereClause = implode(' OR ', $wherePairs);
+
+        $query = "SELECT work_id, work_status, work_project, project_name, project_id, work_description,
+                work_count, work_day, work_week, work_year, work_creation, work_user,
+                user_id, user_firstname, user_lastname
+            FROM table_work
+            LEFT JOIN table_project ON work_project = project_id
+            LEFT JOIN table_user ON work_user = table_user.user_id
+            WHERE ($whereClause)";
+
+        try {
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute($params);
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            throw new \Exception("Erreur lors de la récupération des données : " . $e->getMessage());
+        }
+    }
+
+    /**
      * Récupère les heures de travail d'un utilisateur pour un mois et une année donnés.
-     * 
+     *
      * @param int $userId
      * @param string $month
      * @param string $year
@@ -175,7 +230,7 @@ class WorkManager extends BaseManager
      * @param int|null $year
      * @param array|null $status
      * @throws \Exception
-     * 
+     *
      * @return array
      */
     public function getWeekUserWork(int $userId, ?int $week = null, ?int $year = null, ?array $status = null)
@@ -216,7 +271,7 @@ class WorkManager extends BaseManager
      * Supprime un travail par son ID.
      * Cette méthode supprime un enregistrement de travail
      * de la base de données en fonction de son ID.
-     * 
+     *
      * @param int $id L'ID du travail à supprimer.
      * @throws \Exception
      * @return bool
@@ -296,11 +351,11 @@ class WorkManager extends BaseManager
 
     /**
      * Vérifie si les IDs de travail existent dans la base de données.
-     * 
+     *
      * @param array $work_ids Tableau d'IDs de travail à vérifier.
      * @throws \InvalidArgumentException Si les IDs ne sont pas un tableau.
      * @throws \Exception En cas d'erreur de base de données.
-     * 
+     *
      * @return bool
      */
     public function verifyIds($work_ids)
@@ -329,7 +384,7 @@ class WorkManager extends BaseManager
      * @param string $status Le nouveau statut à appliquer.
      * @throws \InvalidArgumentException Si le statut est invalide ou si les IDs ne sont pas valides.
      * @throws \Exception En cas d'erreur de base de données.
-     * 
+     *
      * @return bool
      */
     public function changeWorkStatus(array $work_ids, string $status): bool
@@ -360,7 +415,7 @@ class WorkManager extends BaseManager
      * de l'utilisateur spécifié dans la base de données.
      * @param int $userId L'ID de l'utilisateur dont les travaux doivent être mis à jour.
      * @throws \Exception En cas d'erreur de base de données.
-     * 
+     *
      * @return bool
      */
     public function setUserWorkWaiting(int $userId): bool
@@ -382,7 +437,7 @@ class WorkManager extends BaseManager
      * de l'utilisateur spécifié dans la base de données.
      * @param int $user_id L'ID de l'utilisateur dont les travaux doivent être validés.
      * @throws \Exception Si l'utilisateur ne peut pas valider ses travaux.
-     * 
+     *
      * @return bool
      */
     public function validateSelfUser(int $user_id)
@@ -399,12 +454,12 @@ class WorkManager extends BaseManager
         }
     }
 
-    /** 
+    /**
      * Vérifie si l'utilisateur peut valider ses travaux.
      * Un utilisateur peut valider ses travaux s'il a au moins 35 heures en cours de création.
-     * 
+     *
      * @param int $userId L'ID de l'utilisateur à vérifier.
-     * 
+     *
      * @return bool
      */
     public function canUserValidate(int $userId): bool
@@ -420,7 +475,7 @@ class WorkManager extends BaseManager
      *
      * @param int $user_id L'ID de l'utilisateur dont les heures doivent être récupérées.
      * @throws \Exception En cas d'erreur de base de données.
-     * 
+     *
      * @return float Le total des heures en cours de création pour l'utilisateur.
      */
     public function getUserHoursToValidateCount($user_id)
@@ -459,7 +514,7 @@ class WorkManager extends BaseManager
      * et des utilisateurs.
      * @param array|null $params Paramètres de recherche optionnels (recherche par nom, prénom, projet, client).
      * @throws \Exception En cas d'erreur de base de données.
-     * 
+     *
      * @return int Le nombre de travaux à valider.
      */
     public function countToValidate(?array $params = null): int
@@ -505,7 +560,7 @@ class WorkManager extends BaseManager
      * en tenant compte des filtres de recherche et des utilisateurs.
      * @param array|null $criteria Critères de recherche optionnels (recherche par nom, prénom, projet, client, statut, utilisateur, semaine, année).
      * @throws \Exception En cas d'erreur de base de données.
-     * 
+     *
      * @return int Le nombre total de lignes dans la table des travaux.
      */
     public function countTableData(?array $criteria = null)

@@ -125,15 +125,38 @@
 
 .planning-day-body {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0.5rem;
     min-height: 70px;
-    padding: 0.75rem;
+    padding: 0.5rem;
     border: 1px dashed var(--color-shadow);
     border-radius: var(--radius);
     color: var(--text-light);
     font-size: 0.9rem;
-    opacity: 0.75;
+}
+
+.planning-day-empty {
+    text-align: center;
+    opacity: 0.6;
+    padding: 0.5rem 0;
+}
+
+.planning-day-body .hour-card {
+    margin: 0;
+}
+
+.planning-day-body .hour-card-user {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin: 0.15rem 0 0;
+}
+
+.btn-add-planning {
+    align-self: stretch;
+    text-align: center;
+    justify-content: center;
 }
 
 @media (max-width: 1024px) {

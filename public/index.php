@@ -194,6 +194,9 @@ $router->addRoute('/delete/clients', 'POST', function () {
 $router->addRoute('/previsionnel', 'GET', function () {
     (new PlanningController())->getIndex();
 }, [ADMIN]);
+$router->addRoute('/previsionnel', 'POST', function () {
+    (new PlanningController())->postPlanning();
+}, [ADMIN]);
 
 // PREFERENCES (USER, ADMIN)
 $router->addRoute('/preferences', 'POST', function () {
