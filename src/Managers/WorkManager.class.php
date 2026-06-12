@@ -276,39 +276,6 @@ class WorkManager extends BaseManager
      * @throws \Exception
      * @return bool
      */
-    /**
-     * Recupere la charge totale par utilisateur pour une semaine ISO.
-     *
-     * @param int $week
-     * @param int $year
-     * @return array Tableau indexe par ID utilisateur.
-     */
-    public function getWeeklyUserLoads(int $week, int $year): array
-    {
-        $query = "SELECT work_user, COALESCE(SUM(work_count), 0) AS total_hours
-            FROM table_work
-            WHERE work_week = :week
-            AND work_year = :year
-            GROUP BY work_user";
-
-        try {
-            $stmt = $this->pdo->prepare($query);
-            $stmt->execute([
-                ':week' => $week,
-                ':year' => $year,
-            ]);
-
-            $loads = [];
-            foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-                $loads[(int) $row['work_user']] = (float) $row['total_hours'];
-            }
-
-            return $loads;
-        } catch (\PDOException $e) {
-            throw new \Exception("Erreur lors de la recuperation des charges hebdomadaires : " . $e->getMessage());
-        }
-    }
-
     public function delete(int $id): bool
     {
         $query = "DELETE FROM table_work WHERE work_id = ?";
