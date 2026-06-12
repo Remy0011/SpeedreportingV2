@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS `table_project` (
   `project_end` date DEFAULT NULL,
   `project_realend` date DEFAULT NULL,
   `project_finish` date DEFAULT NULL,
-  `project_status` enum('en_cours','termine','annule') DEFAULT NULL,
+  `project_status` enum('en_cours','termine','annule', 'suspendu') DEFAULT NULL,
   `project_client` int DEFAULT NULL,
   `project_type` enum('travail','conges', 'maladie', 'absence') DEFAULT 'travail',
   PRIMARY KEY (`project_id`),
