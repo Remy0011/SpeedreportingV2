@@ -125,7 +125,7 @@ class ProjectManager extends BaseManager
      * Cette méthode récupère les projets associés à un utilisateur
      * et calcule la progression de chaque projet en pourcentage.
      * @param int $userId L'ID de l'utilisateur pour lequel récupérer les projets.
-     * 
+     *
      * @return array Un tableau associatif contenant les projets et leur progression.
      */
     public function getUserProjectsWithProgression(int $userId): array
@@ -173,9 +173,9 @@ class ProjectManager extends BaseManager
      * SI on est à la fin et qu'il nous manque du temps, alors on rajoute un surplus de temps (realend) qui s'affiche ne rouge (uniquement ce pourcentage en plus)
      *
      * @param int $projectId L'ID du projet pour lequel récupérer la progression.
-     * 
+     *
      * @return array Un tableau associatif contenant les informations du projet et sa progression.
-     * 
+     *
      * @throws \Exception Si le projet n'est pas trouvé.
      */
     public function getProjectProgression(int $projectId): array
@@ -225,7 +225,7 @@ class ProjectManager extends BaseManager
      * @param int $page Le numéro de la page à récupérer (par défaut 1).
      * @param int $limit Le nombre d'entrées par page (par défaut 10).
      * @param array $filters Les filtres à appliquer (recherche, client_id, statut, start_year).
-     * 
+     *
      * @return array Un tableau associatif contenant les données des projets.
      * @throws \Exception Si une erreur de base de données se produit.
      */
@@ -255,8 +255,18 @@ class ProjectManager extends BaseManager
         }
 
         if (!empty($filters['status'])) {
-            $query .= " AND project_status = :status";
-            $params[':status'] = $filters['status'];
+            if (is_array($filters['status'])) {
+                $placeholders = [];
+                foreach ($filters['status'] as $i => $status) {
+                    $key = ":status_$i";
+                    $placeholders[] = $key;
+                    $params[$key] = $status;
+                }
+                $query .= " AND project_status IN (" . implode(',', $placeholders) . ")";
+            } else {
+                $query .= " AND project_status = :status";
+                $params[':status'] = $filters['status'];
+            }
         }
 
         if (!empty($filters['start_year'])) {
@@ -281,9 +291,9 @@ class ProjectManager extends BaseManager
      * en appliquant des filtres de recherche, de client, de statut et d'année de début.
      *
      * @param array|null $filters Les filtres à appliquer (recherche, client_id, statut, start_year).
-     * 
+     *
      * @return int Le nombre total de projets.
-     * 
+     *
      * @throws \Exception Si une erreur de base de données se produit.
      */
     public function getTableCount(?array $filters = null): int

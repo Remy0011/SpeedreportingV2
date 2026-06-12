@@ -7,6 +7,7 @@ use Src\Core\ErrorKernel;
 use Src\Managers\ProjectManager;
 use Src\Managers\UserManager;
 use Src\Managers\WorkManager;
+use Src\Models\Enums\Status\ProjectStatus;
 use Src\Models\Enums\Status\WorkStatus;
 use Src\Models\Project;
 use Src\Models\User;
@@ -27,12 +28,33 @@ class PlanningController extends BaseController
 
         $calendarData = $this->generateCalendar($month, $year);
 
-        // Charger les projets en cours
-        $projectsRaw = (new ProjectManager())->getTableData(filters: ['status' => 'en_cours']);
-        $projects = [];
-        foreach ($projectsRaw as $row) {
-            $projects[] = new Project($row);
+        // Charger tous les projets disponibles (actifs et à venir) pour le filtre
+        $availableProjectsRaw = (new ProjectManager())->getTableData(
+            limit: 1000,
+            filters: ['status' => [ProjectStatus::EN_COURS, ProjectStatus::EN_ATTENTE]]
+        );
+        $available_projects = [];
+        foreach ($availableProjectsRaw as $row) {
+            $available_projects[] = new Project($row);
         }
+
+        // Gestion du filtre de projets sélectionnés (persistant en session)
+        if (isset($_GET['projects'])) {
+            $selected_project_ids = array_map('intval', (array) $_GET['projects']);
+            $_SESSION['planning_selected_projects'] = $selected_project_ids;
+        } elseif (isset($_SESSION['planning_selected_projects'])) {
+            $selected_project_ids = $_SESSION['planning_selected_projects'];
+        } else {
+            // Par défaut : tous les projets disponibles sont sélectionnés
+            $selected_project_ids = array_map(fn($p) => $p->getId(true), $available_projects);
+            $_SESSION['planning_selected_projects'] = $selected_project_ids;
+        }
+
+        // Projets affichés dans le tableau (intersection des disponibles et sélectionnés)
+        $projects = array_values(array_filter(
+            $available_projects,
+            fn($p) => in_array($p->getId(true), $selected_project_ids, true)
+        ));
 
         // Charger tous les collaborateurs (hors utilisateur système id 0)
         $usersRaw = (new UserManager())->getTableData(limit: 1000);
@@ -41,8 +63,11 @@ class PlanningController extends BaseController
             $users[(int) $row['user_id']] = new User($row);
         }
 
-        // Planning data : créneaux du mois, regroupés par date puis par utilisateur
+        // Planning data (vue calendrier) : créneaux du mois, regroupés par date puis par utilisateur
         $planning_data = [];
+        // Planning data (vue projets) : créneaux regroupés par projet puis par date
+        $planning_data_by_project = [];
+
         $workRows = (new WorkManager())->getMonthWork((string) $month, (string) $year);
         foreach ($workRows as $row) {
             $work = new Work($row);
@@ -52,19 +77,25 @@ class PlanningController extends BaseController
             $d = new DateTimeImmutable();
             $d = $d->setISODate($work->getYear(true), $work->getWeek(true), $work->getDay(true));
             $date = $d->format('Y-m-d');
+
             $planning_data[$date][$work->getUser()] = [
                 'work' => $work,
                 'project_name' => $row['project_name'] ?? '',
                 'user_firstname' => $row['user_firstname'] ?? '',
                 'user_lastname' => $row['user_lastname'] ?? '',
             ];
+
+            $planning_data_by_project[$work->getProject(true)][$date] = $work;
         }
 
         $this::render('Planning/index', array_merge($calendarData, [
-            'projects'     => $projects,
-            'users'        => $users,
-            'planning_data' => $planning_data,
-            'view'         => $view,
+            'projects'             => $projects,
+            'available_projects'   => $available_projects,
+            'selected_project_ids' => $selected_project_ids,
+            'users'                => $users,
+            'planning_data'        => $planning_data,
+            'planning_data_by_project' => $planning_data_by_project,
+            'view'                 => $view,
         ]));
     }
 
@@ -148,17 +179,30 @@ class PlanningController extends BaseController
 
         $month = isset($_POST['current_month']) && is_numeric($_POST['current_month']) ? (int) $_POST['current_month'] : (int) date('n');
         $year  = isset($_POST['current_year'])  && is_numeric($_POST['current_year'])  ? (int) $_POST['current_year']  : (int) date('Y');
+        $view  = $_POST['current_view'] ?? 'calendar';
+        $week  = $_POST['current_week'] ?? null;
 
         if ($month < 1 || $month > 12) $month = (int) date('n');
         if ($year < 2020 || $year > 2120) $year = (int) date('Y');
 
         $calendarData = $this->generateCalendar($month, $year);
 
-        $projectsRaw = (new ProjectManager())->getTableData(filters: ['status' => 'en_cours']);
-        $projects = [];
-        foreach ($projectsRaw as $row) {
-            $projects[] = new Project($row);
+        $availableProjectsRaw = (new ProjectManager())->getTableData(
+            limit: 1000,
+            filters: ['status' => [ProjectStatus::EN_COURS, ProjectStatus::EN_ATTENTE]]
+        );
+        $available_projects = [];
+        foreach ($availableProjectsRaw as $row) {
+            $available_projects[] = new Project($row);
         }
+
+        $selected_project_ids = $_SESSION['planning_selected_projects']
+            ?? array_map(fn($p) => $p->getId(true), $available_projects);
+
+        $projects = array_values(array_filter(
+            $available_projects,
+            fn($p) => in_array($p->getId(true), $selected_project_ids, true)
+        ));
 
         $usersRaw = (new UserManager())->getTableData(limit: 1000);
         $users = [];
@@ -167,6 +211,7 @@ class PlanningController extends BaseController
         }
 
         $planning_data = [];
+        $planning_data_by_project = [];
         $workRows = $workManager->getMonthWork((string) $month, (string) $year);
         foreach ($workRows as $row) {
             $w = new Work($row);
@@ -182,6 +227,22 @@ class PlanningController extends BaseController
                 'user_firstname' => $row['user_firstname'] ?? '',
                 'user_lastname' => $row['user_lastname'] ?? '',
             ];
+            $planning_data_by_project[$w->getProject(true)][$date] = $w;
+        }
+
+        if ($view === 'projects') {
+            $this::renderAjax(
+                'Planning/project_vue',
+                array_merge($calendarData, [
+                    'projects'                 => $projects,
+                    'available_projects'       => $available_projects,
+                    'selected_project_ids'     => $selected_project_ids,
+                    'users'                    => $users,
+                    'planning_data'            => $planning_data,
+                    'planning_data_by_project' => $planning_data_by_project,
+                    'view'                     => $view,
+                ])
+            );
         }
 
         $this::renderAjax(
