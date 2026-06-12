@@ -15,10 +15,13 @@ if (!$current_week) $current_week = $weeks[0];
 $week_days = array_filter($current_week['days'], fn($d) => !in_array($d['name'], ['Samedi', 'Dimanche']));
 
 // Semaines précédente et suivante pour la navigation
-$weeks_list = array_values($weeks);
+$weeks_list    = array_values($weeks);
 $current_index = array_search($current_week, $weeks_list);
-$prev_week = $current_index > 0 ? $weeks_list[$current_index - 1] : null;
-$next_week = $current_index < count($weeks_list) - 1 ? $weeks_list[$current_index + 1] : null;
+$prev_week     = $current_index > 0 ? $weeks_list[$current_index - 1] : null;
+$next_week     = $current_index < count($weeks_list) - 1 ? $weeks_list[$current_index + 1] : null;
+
+// Vue courante (pour conserver la vue dans les liens de navigation)
+$current_view = htmlspecialchars($view ?? 'projects', ENT_QUOTES);
 ?>
 
 <div id="project-planning">
@@ -27,20 +30,21 @@ $next_week = $current_index < count($weeks_list) - 1 ? $weeks_list[$current_inde
     <div class="header">
         <h2 class="calendar-title"><?= $months['current']['name'] ?> <?= $months['current']['year'] ?></h2>
         <nav class="calendar-nav">
-            <!-- Mois précédent / suivant -->
+            <!-- Mois précédent -->
             <a title="Mois précédent" class="pagination-link calendar-button"
-               href="?view=projects&month=<?= $months['previous']['month'] ?>&year=<?= $months['previous']['year'] ?>">
+               href="?view=<?= $current_view ?>&month=<?= $months['previous']['month'] ?>&year=<?= $months['previous']['year'] ?>">
                 <i class='bx bxs-chevron-left'></i>
             </a>
+            <!-- Mois suivant -->
             <a title="Mois suivant" class="pagination-link calendar-button"
-               href="?view=projects&month=<?= $months['next']['month'] ?>&year=<?= $months['next']['year'] ?>">
+               href="?view=<?= $current_view ?>&month=<?= $months['next']['month'] ?>&year=<?= $months['next']['year'] ?>">
                 <i class='bx bxs-chevron-right'></i>
             </a>
 
             <!-- Semaine précédente -->
             <?php if ($prev_week): ?>
                 <a title="Semaine précédente" class="pagination-link calendar-button"
-                   href="?view=projects&month=<?= $months['current']['month'] ?>&year=<?= $months['current']['year'] ?>&week=<?= $prev_week['number'] ?>">
+                   href="?view=<?= $current_view ?>&month=<?= $months['current']['month'] ?>&year=<?= $months['current']['year'] ?>&week=<?= $prev_week['number'] ?>">
                     <i class='bx bx-chevron-left'></i>
                 </a>
             <?php endif; ?>
@@ -53,7 +57,7 @@ $next_week = $current_index < count($weeks_list) - 1 ? $weeks_list[$current_inde
             <!-- Semaine suivante -->
             <?php if ($next_week): ?>
                 <a title="Semaine suivante" class="pagination-link calendar-button"
-                   href="?view=projects&month=<?= $months['current']['month'] ?>&year=<?= $months['current']['year'] ?>&week=<?= $next_week['number'] ?>">
+                   href="?view=<?= $current_view ?>&month=<?= $months['current']['month'] ?>&year=<?= $months['current']['year'] ?>&week=<?= $next_week['number'] ?>">
                     <i class='bx bx-chevron-right'></i>
                 </a>
             <?php endif; ?>
@@ -64,7 +68,7 @@ $next_week = $current_index < count($weeks_list) - 1 ? $weeks_list[$current_inde
                 $months['current']['month'] !== $months['today']['month']
             ): ?>
                 <a title="Mois en cours" class="calendar-button"
-                   href="?view=projects&month=<?= $months['today']['month'] ?>&year=<?= $months['today']['year'] ?>">
+                   href="?view=<?= $current_view ?>&month=<?= $months['today']['month'] ?>&year=<?= $months['today']['year'] ?>">
                     Mois en cours
                 </a>
             <?php endif; ?>
@@ -86,7 +90,7 @@ $next_week = $current_index < count($weeks_list) - 1 ? $weeks_list[$current_inde
                 <tr>
                     <td class="project-cell">
                         <span class="project-name"><?= $project->getName() ?></span>
-                        <span class="project-devs"><?= $project->getDevCount() ?> développeurs</span>
+                        <span class="project-devs"><?= $project->getResource() ?> développeurs</span>
                         <div class="project-actions">
                             <a href="#" class="button danger" data-modal="delete_project_<?= $project->getId() ?>">
                                 <i class='bx bx-trash'></i>
@@ -102,12 +106,10 @@ $next_week = $current_index < count($weeks_list) - 1 ? $weeks_list[$current_inde
                             <?php if ($entry): ?>
                                 <span class="hours-count"><?= $entry->getCount() ?>H</span>
                                 <div class="hour-card-actions">
-                                    <a href="#" class="button contrast"
-                                       data-modal="edit_<?= $entry->getId() ?>">
+                                    <a href="#" class="button contrast" data-modal="edit_<?= $entry->getId() ?>">
                                         <i class='bx bx-edit'></i>
                                     </a>
-                                    <a href="#" class="button danger"
-                                       data-modal="delete_<?= $entry->getId() ?>">
+                                    <a href="#" class="button danger" data-modal="delete_<?= $entry->getId() ?>">
                                         <i class='bx bx-trash'></i>
                                     </a>
                                 </div>
@@ -136,7 +138,7 @@ $next_week = $current_index < count($weeks_list) - 1 ? $weeks_list[$current_inde
             <!-- Modal read projet -->
             <?php require __DIR__ . '/../../partials/modals/read/_top.html.php'; ?>
             <p><strong>Projet :</strong> <?= $project->getName() ?></p>
-            <p><strong>Développeurs :</strong> <?= $project->getDevCount() ?></p>
+            <p><strong>Développeurs :</strong> <?= $project->getResource() ?></p>
             <?php require __DIR__ . '/../../partials/modals/read/_bottom.html.php'; ?>
 
             <?php foreach ($week_days as $day): ?>
@@ -164,8 +166,7 @@ $next_week = $current_index < count($weeks_list) - 1 ? $weeks_list[$current_inde
 
                 <?php else: ?>
 
-                    <!-- Modal create entrée (bouton +) -->
-                    <!-- TODO: action à renseigner quand la route sera créée -->
+                    <!-- Modal create entrée -->
                     <div class="modal" id="modal_create_<?= $project->getId() ?>_<?= $day['date'] ?>">
                         <div class="modal-content">
                             <div class="modal-header">

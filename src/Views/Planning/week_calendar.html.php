@@ -4,19 +4,20 @@
             <div class="header">
                 <nav class="calendar-nav">
                     <a title="Mois précédent" class="pagination-link calendar-button"
-                       href="?month=<?= $months['previous']['month']; ?>&year=<?= $months['previous']['year']; ?>">
-                        <i class='bx bxs-chevron-left'></i>
+                        href="?view=calendar&month=<?= $months['previous']['month']; ?>&year=<?= $months['previous']['year']; ?>">
+                            <i class='bx bxs-chevron-left'></i>
                     </a>
                     <a title="Mois suivant" class="pagination-link calendar-button"
-                       href="?month=<?= $months['next']['month']; ?>&year=<?= $months['next']['year']; ?>">
-                        <i class='bx bxs-chevron-right'></i>
+                        href="?view=calendar&month=<?= $months['next']['month']; ?>&year=<?= $months['next']['year']; ?>">
+                            <i class='bx bxs-chevron-right'></i>
                     </a>
+
                     <?php if (
                         $months['current']['year'] !== $months['today']['year'] ||
                         $months['current']['month'] !== $months['today']['month']
                     ): ?>
                         <a title="Mois en cours" class="calendar-button"
-                           href="?month=<?= $months['today']['month']; ?>&year=<?= $months['today']['year']; ?>">
+                        href="?view=calendar&month=<?= $months['today']['month']; ?>&year=<?= $months['today']['year']; ?>">
                             Mois en cours
                         </a>
                     <?php endif; ?>

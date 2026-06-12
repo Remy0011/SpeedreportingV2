@@ -14,12 +14,11 @@ class ViewService
      * 
      * @throws ErrorKernel Si la vue n'est pas trouvée.
      */
-    protected static function render(string $view, array $params = [])
+    protected static function render(string $viewName, array $params = [])
     {
         extract($params);
         
-        $partial_view_path = "Views/$view.html.php";
-
+        $partial_view_path = "Views/$viewName.html.php";
         $view_path = $_SERVER['DOCUMENT_ROOT'] . '/../src/' . $partial_view_path;
 
         if (file_exists($view_path)) {
@@ -38,11 +37,11 @@ class ViewService
      * @param string $view Le nom de la vue à rendre (sans extension).
      * @param array $params Les paramètres à passer à la vue.
      */
-    protected static function renderAjax(string $view, array $params = [])
+    protected static function renderAjax(string $viewName, array $params = [])
     {
         // Vérifie si c’est un appel AJAX
         if (self::requestIsAjax()) {
-            self::render($view, $params);
+            self::render($viewName, $params);
             exit;
         }
     }
