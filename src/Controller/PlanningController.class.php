@@ -3,16 +3,8 @@
 namespace Src\Controller;
 
 use DateTimeImmutable;
-use Src\Core\ErrorKernel;
 use Src\Managers\ProjectManager;
-use Src\Managers\UserManager;
-use Src\Managers\WorkManager;
-use Src\Models\Enums\Status\ProjectStatus;
-use Src\Models\Enums\Status\WorkStatus;
 use Src\Models\Project;
-use Src\Models\User;
-use Src\Models\Work;
-use Src\Services\CsrfService;
 
 
 class PlanningController extends BaseController
@@ -28,232 +20,21 @@ class PlanningController extends BaseController
 
         $calendarData = $this->generateCalendar($month, $year);
 
-        // Charger tous les projets disponibles (actifs et à venir) pour le filtre
-        $availableProjectsRaw = (new ProjectManager())->getTableData(
-            limit: 1000,
-            filters: ['status' => [ProjectStatus::EN_COURS, ProjectStatus::EN_ATTENTE]]
-        );
-        $available_projects = [];
-        foreach ($availableProjectsRaw as $row) {
-            $available_projects[] = new Project($row);
+        // Charger les projets en cours
+        $projectsRaw = (new ProjectManager())->getTableData(filters: ['status' => 'en_cours']);
+        $projects = [];
+        foreach ($projectsRaw as $row) {
+            $projects[] = new Project($row);
         }
 
-        // Gestion du filtre de projets sélectionnés (persistant en session)
-        if (isset($_GET['filter_submitted'])) {
-            $selected_project_ids = isset($_GET['projects']) ? array_map('intval', (array) $_GET['projects']) : [];
-            $_SESSION['planning_selected_projects'] = $selected_project_ids;
-        } elseif (isset($_SESSION['planning_selected_projects'])) {
-            $selected_project_ids = $_SESSION['planning_selected_projects'];
-        } else {
-            // Par défaut : tous les projets disponibles sont sélectionnés
-            $selected_project_ids = array_map(fn($p) => $p->getId(true), $available_projects);
-            $_SESSION['planning_selected_projects'] = $selected_project_ids;
-        }
-
-        // Projets affichés dans le tableau (intersection des disponibles et sélectionnés)
-        $projects = array_values(array_filter(
-            $available_projects,
-            fn($p) => in_array($p->getId(true), $selected_project_ids, true)
-        ));
-
-        // Charger tous les collaborateurs (hors utilisateur système id 0)
-        $usersRaw = (new UserManager())->getTableData(limit: 1000);
-        $users = [];
-        foreach ($usersRaw as $row) {
-            $users[(int) $row['user_id']] = new User($row);
-        }
-
-        // Planning data (vue calendrier) : créneaux du mois, regroupés par date puis par utilisateur
+        // Planning data (vide pour l'instant)
         $planning_data = [];
-        // Planning data (vue projets) : créneaux regroupés par projet puis par date
-        $planning_data_by_project = [];
-
-        $workRows = (new WorkManager())->getMonthWork((string) $month, (string) $year);
-        foreach ($workRows as $row) {
-            $work = new Work($row);
-            if (!$work->getYear(true) || !$work->getWeek(true) || !$work->getDay(true)) {
-                continue;
-            }
-            $d = new DateTimeImmutable();
-            $d = $d->setISODate($work->getYear(true), $work->getWeek(true), $work->getDay(true));
-            $date = $d->format('Y-m-d');
-
-            $planning_data[$date][$work->getUser()] = [
-                'work' => $work,
-                'project_name' => $row['project_name'] ?? '',
-                'user_firstname' => $row['user_firstname'] ?? '',
-                'user_lastname' => $row['user_lastname'] ?? '',
-            ];
-
-            $planning_data_by_project[$work->getProject(true)][$date] = $work;
-        }
 
         $this::render('Planning/index', array_merge($calendarData, [
-            'projects'             => $projects,
-            'available_projects'   => $available_projects,
-            'selected_project_ids' => $selected_project_ids,
-            'users'                => $users,
-            'planning_data'        => $planning_data,
-            'planning_data_by_project' => $planning_data_by_project,
-            'view'                 => $view,
+            'projects'     => $projects,
+            'planning_data' => $planning_data,
+            'view'         => $view,
         ]));
-    }
-
-    /**
-     * Gère la création, modification et suppression des créneaux de travail
-     * du planning prévisionnel (vue administrateur).
-     *
-     * Champs requis :
-     * - command : 'create', 'update' ou 'delete'
-     *
-     * @return void
-     */
-    public function postPlanning(): void
-    {
-        if (!CsrfService::isValid()) {
-            ErrorKernel::throwHttpError(403, "Token CSRF invalide.");
-        }
-
-        $command = $_POST['command'] ?? null;
-        $commands = ['create', 'update', 'delete'];
-
-        if (!in_array($command, $commands)) {
-            ErrorKernel::throwHttpError(400, "Command non valide.");
-        }
-
-        $workManager = new WorkManager();
-
-        switch ($command) {
-            case 'create':
-                $required_fields = ['work_user', 'work_project', 'work_count', 'work_date'];
-                foreach ($required_fields as $field) {
-                    if (!isset($_POST[$field]) || $_POST[$field] === '') {
-                        ErrorKernel::throwHttpError(400, "Le champ $field est requis.");
-                    }
-                }
-
-                $work_date = new DateTimeImmutable($_POST['work_date']);
-
-                $work = new Work($_POST);
-                $work->setUser((int) $_POST['work_user']);
-                $work->setProject((int) $_POST['work_project']);
-                $work->setCount((float) $_POST['work_count']);
-                $work->setStatus(WorkStatus::CONFIRME);
-                $work->setYear((int) $work_date->format('o'));
-                $work->setWeek((int) $work_date->format('W'));
-                $work->setDay((int) $work_date->format('N'));
-
-                $workManager->save($work);
-                break;
-
-            case 'update':
-                if (empty($_POST['work_id'])) {
-                    ErrorKernel::throwHttpError(400, "Le champ work_id est requis.");
-                }
-
-                $work_raw = $workManager->find((int) $_POST['work_id']);
-                if (!$work_raw) {
-                    ErrorKernel::throwHttpError(404, "Créneau non trouvé.");
-                }
-
-                $work = new Work($work_raw);
-
-                if (isset($_POST['work_count']) && $_POST['work_count'] !== '') {
-                    $work->setCount((float) $_POST['work_count']);
-                }
-                if (isset($_POST['work_description'])) {
-                    $work->setDescription($_POST['work_description']);
-                }
-
-                $workManager->update($work);
-                break;
-
-            case 'delete':
-                if (empty($_POST['work_id'])) {
-                    ErrorKernel::throwHttpError(400, "Le champ work_id est requis.");
-                }
-
-                $workManager->delete((int) $_POST['work_id']);
-                break;
-        }
-
-        $month = isset($_POST['current_month']) && is_numeric($_POST['current_month']) ? (int) $_POST['current_month'] : (int) date('n');
-        $year  = isset($_POST['current_year'])  && is_numeric($_POST['current_year'])  ? (int) $_POST['current_year']  : (int) date('Y');
-        $view  = $_POST['current_view'] ?? 'calendar';
-        $week  = $_POST['current_week'] ?? null;
-
-        if ($month < 1 || $month > 12) $month = (int) date('n');
-        if ($year < 2020 || $year > 2120) $year = (int) date('Y');
-
-        $calendarData = $this->generateCalendar($month, $year);
-
-        $availableProjectsRaw = (new ProjectManager())->getTableData(
-            limit: 1000,
-            filters: ['status' => [ProjectStatus::EN_COURS, ProjectStatus::EN_ATTENTE]]
-        );
-        $available_projects = [];
-        foreach ($availableProjectsRaw as $row) {
-            $available_projects[] = new Project($row);
-        }
-
-        $selected_project_ids = $_SESSION['planning_selected_projects']
-            ?? array_map(fn($p) => $p->getId(true), $available_projects);
-
-        $projects = array_values(array_filter(
-            $available_projects,
-            fn($p) => in_array($p->getId(true), $selected_project_ids, true)
-        ));
-
-        $usersRaw = (new UserManager())->getTableData(limit: 1000);
-        $users = [];
-        foreach ($usersRaw as $row) {
-            $users[(int) $row['user_id']] = new User($row);
-        }
-
-        $planning_data = [];
-        $planning_data_by_project = [];
-        $workRows = $workManager->getMonthWork((string) $month, (string) $year);
-        foreach ($workRows as $row) {
-            $w = new Work($row);
-            if (!$w->getYear(true) || !$w->getWeek(true) || !$w->getDay(true)) {
-                continue;
-            }
-            $d = new DateTimeImmutable();
-            $d = $d->setISODate($w->getYear(true), $w->getWeek(true), $w->getDay(true));
-            $date = $d->format('Y-m-d');
-            $planning_data[$date][$w->getUser()] = [
-                'work' => $w,
-                'project_name' => $row['project_name'] ?? '',
-                'user_firstname' => $row['user_firstname'] ?? '',
-                'user_lastname' => $row['user_lastname'] ?? '',
-            ];
-            $planning_data_by_project[$w->getProject(true)][$date] = $w;
-        }
-
-        if ($view === 'projects') {
-            $this::renderAjax(
-                'Planning/project_vue',
-                array_merge($calendarData, [
-                    'projects'                 => $projects,
-                    'available_projects'       => $available_projects,
-                    'selected_project_ids'     => $selected_project_ids,
-                    'users'                    => $users,
-                    'planning_data'            => $planning_data,
-                    'planning_data_by_project' => $planning_data_by_project,
-                    'view'                     => $view,
-                ])
-            );
-        }
-
-        $this::renderAjax(
-            'Planning/week_calendar',
-            array_merge($calendarData, [
-                'projects'      => $projects,
-                'users'         => $users,
-                'planning_data' => $planning_data,
-                'view'          => 'calendar',
-            ])
-        );
     }
 
     private function generateCalendar(int $month, int $year): array
