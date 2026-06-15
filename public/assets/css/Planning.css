@@ -2,17 +2,46 @@
     width: calc(100% - 15px);
 }
 
-#planning-calendar .calendar-nav {
+#planning-calendar .calendar-nav,
+#user-planning .calendar-nav {
     display: flex;
     align-items: center;
     gap: 0.4rem;
 }
 
-#planning-calendar .calendar-button {
+#planning-calendar .calendar-button,
+#user-planning .calendar-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
+
+    background: var(--color-primary);
+    color: #ffffff;
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--radius);
+    transition: opacity 0.2s ease;
+}
+
+#planning-calendar .calendar-button i,
+#user-planning .calendar-button i {
+    color: #ffffff !important;
+    font-size: 1.2rem;
+}
+
+#planning-calendar .calendar-button:hover,
+#user-planning .calendar-button:hover {
+    opacity: 0.85;
+}
+
+#planning-calendar .calendar-title,
+#user-planning .calendar-title,
+#project-planning .calendar-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-light);
+    line-height: 1.2;
 }
 
 .planning-week-list {
@@ -159,6 +188,147 @@
     justify-content: center;
 }
 
+#user-planning .header,
+#project-planning .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.planning-user-table-wrap {
+    overflow-x: auto;
+    background: var(--bg-light);
+    border: 1px solid var(--color-shadow);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px var(--color-shadow);
+}
+
+.planning-user-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    color: var(--text-light);
+}
+
+.planning-user-table th {
+    padding: 0.9rem 1rem;
+    color: var(--text-dark);
+    background: var(--color-primary);
+    font-weight: 800;
+    text-align: center;
+}
+
+.planning-user-table th,
+.planning-user-table td {
+    border-right: 1px solid var(--color-shadow);
+    border-bottom: 1px solid var(--color-shadow);
+}
+
+.planning-user-table th:last-child,
+.planning-user-table td:last-child {
+    border-right: none;
+}
+
+.planning-user-table tr:last-child td {
+    border-bottom: none;
+}
+
+.planning-user-table td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.planning-user-cell,
+.planning-week-cell,
+.planning-load-cell {
+    width: 33.333%;
+}
+
+.planning-user-cell strong,
+.planning-week-cell strong,
+.planning-load-cell strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.planning-user-cell span,
+.planning-week-cell span {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    opacity: 0.72;
+    text-transform: uppercase;
+}
+
+.planning-load-cell {
+    text-align: center;
+}
+
+.planning-load-bar {
+    display: block;
+    overflow: hidden;
+    height: 0.45rem;
+    margin-top: 0.55rem;
+    background: var(--bg-light-2);
+    border-radius: var(--radius-full);
+}
+
+.planning-load-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+}
+
+.planning-load-bar .is-normal {
+    background: var(--status-success);
+}
+
+.planning-load-bar .is-high {
+    background: var(--status-progress);
+}
+
+.planning-load-bar .is-full {
+    background: var(--color-primary);
+}
+
+.planning-muted,
+.planning-empty {
+    color: var(--text-light);
+    opacity: 0.65;
+}
+
+.planning-empty {
+    text-align: center;
+    color: var(--text-light);
+}
+
+.week-label {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.8rem;
+    text-align: center;
+}
+
+.week-label strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-light);
+    line-height: 1.2;
+}
+
+.week-label span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+}
+
 @media (max-width: 1024px) {
     .planning-days-grid {
         grid-template-columns: repeat(2, minmax(180px, 1fr));
@@ -171,6 +341,7 @@
 
 @media (max-width: 768px) {
     #planning-calendar #calendar .header,
+    #user-planning .header,
     .planning-week-header {
         align-items: flex-start;
         flex-direction: column;
@@ -188,7 +359,6 @@
         border-right: none;
     }
 }
-
 
 /* ---- Filtre des projets (style "card" / graphique) ---- */
 .project-filter {
@@ -314,6 +484,7 @@
     width: 100%;
     border-collapse: collapse;
     background-color: var(--bg-light);
+    color: var(--text-light);
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: 0 4px 10px var(--color-shadow);
@@ -330,6 +501,7 @@
 
 #planning-table tbody td {
     padding: 0.6rem 0.75rem;
+    color: var(--text-light);
     border-bottom: 1px solid var(--color-shadow);
     vertical-align: top;
 }
@@ -376,6 +548,7 @@
 .hours-count {
     display: block;
     font-weight: 600;
+    color: var(--text-light);
     margin-bottom: 0.3rem;
 }
 
