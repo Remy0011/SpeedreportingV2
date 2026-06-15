@@ -27,6 +27,7 @@ class PlanningController extends BaseController
         if ($year < 2020 || $year > 2120) $year = (int) date('Y');
 
         $calendarData = $this->generateCalendar($month, $year);
+        $selectedWeek = $this->getSelectedWeek($calendarData['weeks']);
 
         // Charger tous les projets disponibles (actifs et à venir) pour le filtre
         $availableProjectsRaw = (new ProjectManager())->getTableData(
@@ -45,12 +46,10 @@ class PlanningController extends BaseController
         } elseif (isset($_SESSION['planning_selected_projects'])) {
             $selected_project_ids = $_SESSION['planning_selected_projects'];
         } else {
-            // Par défaut : tous les projets disponibles sont sélectionnés
             $selected_project_ids = array_map(fn($p) => $p->getId(true), $available_projects);
             $_SESSION['planning_selected_projects'] = $selected_project_ids;
         }
 
-        // Projets affichés dans le tableau (intersection des disponibles et sélectionnés)
         $projects = array_values(array_filter(
             $available_projects,
             fn($p) => in_array($p->getId(true), $selected_project_ids, true)
@@ -63,39 +62,36 @@ class PlanningController extends BaseController
             $users[(int) $row['user_id']] = new User($row);
         }
 
-        // Planning data (vue calendrier) : créneaux du mois, regroupés par date puis par utilisateur
-        $planning_data = [];
-        // Planning data (vue projets) : créneaux regroupés par projet puis par date
-        $planning_data_by_project = [];
+        // Planning data (vue calendrier / vue projets)
+        [$planning_data, $planning_data_by_project] = $this->buildPlanningData($month, $year);
 
-        $workRows = (new WorkManager())->getMonthWork((string) $month, (string) $year);
-        foreach ($workRows as $row) {
-            $work = new Work($row);
-            if (!$work->getYear(true) || !$work->getWeek(true) || !$work->getDay(true)) {
-                continue;
+        // Données pour la vue "utilisateurs" (charge hebdomadaire)
+        $userRows = [];
+        if ($view === 'users') {
+            $planningUsers = (new UserManager())->getPlanningUsers();
+            $weeklyLoads = (new WorkManager())->getWeeklyUserLoads($selectedWeek['number'], $selectedWeek['year']);
+
+            foreach ($planningUsers as $user) {
+                $userId = (int) $user['user_id'];
+                $userRows[] = [
+                    'id' => $userId,
+                    'name' => trim(($user['user_firstname'] ?? '') . ' ' . ($user['user_lastname'] ?? '')),
+                    'role' => $user['role_fr'] ?? '',
+                    'hours' => $weeklyLoads[$userId] ?? 0.0,
+                ];
             }
-            $d = new DateTimeImmutable();
-            $d = $d->setISODate($work->getYear(true), $work->getWeek(true), $work->getDay(true));
-            $date = $d->format('Y-m-d');
-
-            $planning_data[$date][$work->getUser()] = [
-                'work' => $work,
-                'project_name' => $row['project_name'] ?? '',
-                'user_firstname' => $row['user_firstname'] ?? '',
-                'user_lastname' => $row['user_lastname'] ?? '',
-            ];
-
-            $planning_data_by_project[$work->getProject(true)][$date] = $work;
         }
 
         $this::render('Planning/index', array_merge($calendarData, [
-            'projects'             => $projects,
-            'available_projects'   => $available_projects,
-            'selected_project_ids' => $selected_project_ids,
-            'users'                => $users,
-            'planning_data'        => $planning_data,
+            'projects'                 => $projects,
+            'available_projects'       => $available_projects,
+            'selected_project_ids'     => $selected_project_ids,
+            'users'                    => $users,
+            'planning_data'            => $planning_data,
             'planning_data_by_project' => $planning_data_by_project,
-            'view'                 => $view,
+            'view'                     => $view,
+            'selected_week'            => $selectedWeek,
+            'user_rows'                => $userRows,
         ]));
     }
 
@@ -180,7 +176,6 @@ class PlanningController extends BaseController
         $month = isset($_POST['current_month']) && is_numeric($_POST['current_month']) ? (int) $_POST['current_month'] : (int) date('n');
         $year  = isset($_POST['current_year'])  && is_numeric($_POST['current_year'])  ? (int) $_POST['current_year']  : (int) date('Y');
         $view  = $_POST['current_view'] ?? 'calendar';
-        $week  = $_POST['current_week'] ?? null;
 
         if ($month < 1 || $month > 12) $month = (int) date('n');
         if ($year < 2020 || $year > 2120) $year = (int) date('Y');
@@ -210,25 +205,7 @@ class PlanningController extends BaseController
             $users[(int) $row['user_id']] = new User($row);
         }
 
-        $planning_data = [];
-        $planning_data_by_project = [];
-        $workRows = $workManager->getMonthWork((string) $month, (string) $year);
-        foreach ($workRows as $row) {
-            $w = new Work($row);
-            if (!$w->getYear(true) || !$w->getWeek(true) || !$w->getDay(true)) {
-                continue;
-            }
-            $d = new DateTimeImmutable();
-            $d = $d->setISODate($w->getYear(true), $w->getWeek(true), $w->getDay(true));
-            $date = $d->format('Y-m-d');
-            $planning_data[$date][$w->getUser()] = [
-                'work' => $w,
-                'project_name' => $row['project_name'] ?? '',
-                'user_firstname' => $row['user_firstname'] ?? '',
-                'user_lastname' => $row['user_lastname'] ?? '',
-            ];
-            $planning_data_by_project[$w->getProject(true)][$date] = $w;
-        }
+        [$planning_data, $planning_data_by_project] = $this->buildPlanningData($month, $year);
 
         if ($view === 'projects') {
             $this::renderAjax(
@@ -254,6 +231,56 @@ class PlanningController extends BaseController
                 'view'          => 'calendar',
             ])
         );
+    }
+
+    /**
+     * Construit les structures de données du planning (par date/utilisateur et par projet/date)
+     * pour un mois et une année donnés.
+     *
+     * @param int $month
+     * @param int $year
+     * @return array{0: array, 1: array}
+     */
+    private function buildPlanningData(int $month, int $year): array
+    {
+        $planning_data = [];
+        $planning_data_by_project = [];
+
+        $workRows = (new WorkManager())->getMonthWork((string) $month, (string) $year);
+        foreach ($workRows as $row) {
+            $work = new Work($row);
+            if (!$work->getYear(true) || !$work->getWeek(true) || !$work->getDay(true)) {
+                continue;
+            }
+            $d = new DateTimeImmutable();
+            $d = $d->setISODate($work->getYear(true), $work->getWeek(true), $work->getDay(true));
+            $date = $d->format('Y-m-d');
+
+            $planning_data[$date][$work->getUser()] = [
+                'work' => $work,
+                'project_name' => $row['project_name'] ?? '',
+                'user_firstname' => $row['user_firstname'] ?? '',
+                'user_lastname' => $row['user_lastname'] ?? '',
+            ];
+
+            $planning_data_by_project[$work->getProject(true)][$date] = $work;
+        }
+
+        return [$planning_data, $planning_data_by_project];
+    }
+
+    private function getSelectedWeek(array $weeks): array
+    {
+        $selectedWeekNumber = isset($_GET['week']) && is_numeric($_GET['week']) ? (int) $_GET['week'] : ($weeks[0]['number'] ?? (int) date('W'));
+        $selectedWeekYear = isset($_GET['week_year']) && is_numeric($_GET['week_year']) ? (int) $_GET['week_year'] : null;
+
+        foreach ($weeks as $week) {
+            if ($week['number'] === $selectedWeekNumber && ($selectedWeekYear === null || $week['year'] === $selectedWeekYear)) {
+                return $week;
+            }
+        }
+
+        return $weeks[0];
     }
 
     private function generateCalendar(int $month, int $year): array

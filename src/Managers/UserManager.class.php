@@ -12,10 +12,10 @@ class UserManager extends BaseManager
 
     /**
      * Vérifie la correspondance entre l'email et le mot de passe d'un utilisateur dans la base de données.
-     * 
+     *
      * @param string $email L'email de l'utilisateur.
      * @param string $password Le mot de passe de l'utilisateur.
-     * 
+     *
      * @return mixed Les informations de l'utilisateur si la connexion est réussie, sinon false.
      */
     public function authenticate(string $email, string $password): mixed
@@ -33,10 +33,10 @@ class UserManager extends BaseManager
 
     /**
      * Change le mot de passe d'un utilisateur dans la base de données.
-     * 
+     *
      * @param int $user_id L'ID de l'utilisateur.
      * @param string $new_password Le nouveau mot de passe de l'utilisateur.
-     * 
+     *
      * @return bool True si le mot de passe a été changé avec succès, sinon false.
      */
     public function changePassword(int $user_id, string $new_password): bool
@@ -52,7 +52,7 @@ class UserManager extends BaseManager
      * Supprime le token d'un utilisateur dans la base de données.
      * @param int $user_id L'ID de l'utilisateur.
      * @param string $token Le token à supprimer.
-     * 
+     *
      * @return bool True si le token a été supprimé avec succès, sinon false.
      */
     public function deleteUserToken(int $user_id, string $token): bool
@@ -67,7 +67,7 @@ class UserManager extends BaseManager
 
     /**
      * Cette méthode est utilisée pour obtenir les informations du premier utilisateur ayant le rôle d'administrateur.
-     * 
+     *
      * @return array|null Les informations de l'utilisateur administrateur ou null si aucun utilisateur n'est trouvé.
      */
     public function getAdminUser()
@@ -92,7 +92,7 @@ class UserManager extends BaseManager
      * Récupère un utilisateur par son email.
      * @param string $email L'email de l'utilisateur.
      * @param array|null $cols Les colonnes à sélectionner, ou null pour toutes les colonnes.
-     * 
+     *
      * @return array|null Les informations de l'utilisateur ou null si aucun utilisateur n'est trouvé.
      */
     public function getUserByEmail(string $email, ?array $cols = null)
@@ -116,7 +116,7 @@ class UserManager extends BaseManager
      * @param int $page Numéro de la page à récupérer (1 par défaut).
      * @param int $limit Nombre de résultats par page (10 par défaut).
      * @param array|null $filters Filtres optionnels pour la recherche (par email, nom, statut, rôle).
-     * 
+     *
      * @return array Les données des utilisateurs avec les rôles associés.
      */
     public function getTableData(int $page = 1, int $limit = 10, ?array $filters = []): array
@@ -172,9 +172,9 @@ class UserManager extends BaseManager
 
     /**
      * Compte le nombre d'utilisateurs dans la base de données avec des filtres optionnels.
-     * 
+     *
      * @param array|null $filters Filtres optionnels pour la recherche (par email, nom, statut, rôle).
-     * 
+     *
      * @return int Le nombre d'utilisateurs correspondant aux critères.
      */
     public function getTableCount(?array $filters = []): int
@@ -237,7 +237,7 @@ class UserManager extends BaseManager
     /**
      * Supprime un utilisateur de la base de données.
      * @param int $user_id L'ID de l'utilisateur à supprimer.
-     * 
+     *
      * @return bool True si l'utilisateur a été supprimé avec succès, sinon false.
      */
 
@@ -275,7 +275,7 @@ class UserManager extends BaseManager
      * Stocke le token d'un utilisateur dans la base de données.
      * @param int $user_id L'ID de l'utilisateur.
      * @param string $token Le token à stocker.
-     * 
+     *
      * @return bool True si le token a été stocké avec succès, sinon false.
      */
     public function storeUserToken(int $user_id, string $token): bool
@@ -294,7 +294,7 @@ class UserManager extends BaseManager
      * Vérifie si le token d'un utilisateur est valide.
      * @param int $user_id L'ID de l'utilisateur.
      * @param string $token Le token à vérifier.
-     * 
+     *
      * @return bool True si le token est valide, sinon false.
      */
     public function verifyUserToken(int $user_id, string $token): bool
