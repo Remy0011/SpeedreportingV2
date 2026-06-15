@@ -574,3 +574,44 @@
     background-color: var(--color-t);
     border-color: var(--status-success);
 }
+
+/* ---- Notification "moins de 35h" ---- */
+.planning-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    border: 1px solid var(--status-danger);
+    border-left: 4px solid var(--status-danger);
+    border-radius: var(--radius);
+    box-shadow: var(--status-danger-shadow);
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1.25rem;
+    text-decoration: none;
+    transition: transform var(--t), background-color var(--t);
+    animation: fadeInUp 0.5s ease-in-out;
+}
+
+.planning-alert:hover {
+    transform: translateY(-2px);
+    background-color: var(--color-t);
+}
+
+.planning-alert i:first-child {
+    font-size: 1.4rem;
+    color: var(--status-danger);
+    flex-shrink: 0;
+}
+
+.planning-alert span {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.planning-alert i:last-child {
+    font-size: 1.2rem;
+    opacity: 0.7;
+    flex-shrink: 0;
+}

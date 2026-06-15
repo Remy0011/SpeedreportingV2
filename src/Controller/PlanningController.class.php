@@ -65,21 +65,20 @@ class PlanningController extends BaseController
         // Planning data (vue calendrier / vue projets)
         [$planning_data, $planning_data_by_project] = $this->buildPlanningData($month, $year);
 
-        // Données pour la vue "utilisateurs" (charge hebdomadaire)
-        $userRows = [];
-        if ($view === 'users') {
-            $planningUsers = (new UserManager())->getPlanningUsers();
-            $weeklyLoads = (new WorkManager())->getWeeklyUserLoads($selectedWeek['number'], $selectedWeek['year']);
+        // Charge hebdomadaire par collaborateur (utilisé par la vue "users"
+        // et par la notification "moins de 35h" affichée sur toutes les vues)
+        $planningUsers = (new UserManager())->getPlanningUsers();
+        $weeklyLoads = (new WorkManager())->getWeeklyUserLoads($selectedWeek['number'], $selectedWeek['year']);
 
-            foreach ($planningUsers as $user) {
-                $userId = (int) $user['user_id'];
-                $userRows[] = [
-                    'id' => $userId,
-                    'name' => trim(($user['user_firstname'] ?? '') . ' ' . ($user['user_lastname'] ?? '')),
-                    'role' => $user['role_fr'] ?? '',
-                    'hours' => $weeklyLoads[$userId] ?? 0.0,
-                ];
-            }
+        $userRows = [];
+        foreach ($planningUsers as $user) {
+            $userId = (int) $user['user_id'];
+            $userRows[] = [
+                'id' => $userId,
+                'name' => trim(($user['user_firstname'] ?? '') . ' ' . ($user['user_lastname'] ?? '')),
+                'role' => $user['role_fr'] ?? '',
+                'hours' => $weeklyLoads[$userId] ?? 0.0,
+            ];
         }
 
         $this::render('Planning/index', array_merge($calendarData, [
