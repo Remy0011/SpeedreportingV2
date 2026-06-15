@@ -293,6 +293,23 @@
     background: var(--color-primary);
 }
 
+.planning-remaining {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.planning-remaining.is-pending {
+    color: var(--status-progress);
+}
+
+.planning-remaining.is-done {
+    color: var(--status-success);
+}
+
 .planning-muted,
 .planning-empty {
     color: var(--text-light);
