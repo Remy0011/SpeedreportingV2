@@ -16,7 +16,26 @@ use Src\Core\EnvLoader;
 use Src\Services\ProfilePictureService;
 use Src\Services\RouterService;
 
+// Configuration sécurisée des cookies de session
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (int)($_SERVER['SERVER_PORT'] ?? 80) === 443;
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => $isHttps,
+    'httponly' => true,
+    'samesite' => 'Strict',
+]);
 session_start();
+
+// Headers de sécurité HTTP
+header('X-Frame-Options: DENY');
+header('X-Content-Type-Options: nosniff');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+if ($isHttps) {
+    header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+}
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/../src/Utils/functions.php';
 
@@ -35,8 +54,10 @@ if (getenv('APP_ENV') === 'dev') {
     // PRODUCTION
     error_reporting(0);
     ini_set('display_errors', '0');
-    ErrorKernel::register();
 }
+
+// Toujours enregistrer le gestionnaire d'exceptions pour afficher les pages d'erreur stylisées
+ErrorKernel::register();
 
 const USER = 2;
 const ADMIN = 1;
