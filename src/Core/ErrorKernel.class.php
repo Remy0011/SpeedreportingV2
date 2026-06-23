@@ -47,6 +47,7 @@ class ErrorKernel
      */
     public static function throwHttpError(int $code, string $message): never
     {
+         file_put_contents('/tmp/error_log.txt', $message . PHP_EOL . json_encode(array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 0, 10)) . PHP_EOL, FILE_APPEND);
         throw new \RuntimeException($message, $code);
     }
 

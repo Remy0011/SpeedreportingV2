@@ -2,15 +2,17 @@
 $projectsStatus_data = $data['projectStatus_data'] ?? [];
 
 $labelMapping = [
-    'termine'   => 'Validé',
-    'en_cours'  => 'En cours',
-    'annule'    => 'Annulé'
+        'en_attente' => 'En attente',
+        'en_cours'   => 'En cours',
+        'termine'    => 'Terminé',
+        'suspendu'   => 'Suspendu',
 ];
 
 $statusMap = [
-    'Validé' => 0,
-    'En cours' => 0,
-    'Annulé' => 0
+        'En attente' => 0,
+        'En cours'   => 0,
+        'Terminé'    => 0,
+        'Suspendu'   => 0,
 ];
 
 foreach ($projectsStatus_data as $status) {
@@ -32,23 +34,26 @@ foreach ($projectsStatus_data as $status) {
             document.addEventListener('DOMContentLoaded', function() {
                 const ctx = document.getElementById('projectStatus').getContext('2d');
                 const projectStatusData = {
-                    labels: ['Validé', 'En cours', 'Annulé'],
+                    labels: ['En attente', 'En cours', 'Terminé', 'Suspendu'],
                     datasets: [{
                         label: 'Nombre de projets',
                         data: [
-                            <?= $statusMap['Validé'] ?>,
+                            <?= $statusMap['En attente'] ?>,
                             <?= $statusMap['En cours'] ?>,
-                            <?= $statusMap['Annulé'] ?>
+                            <?= $statusMap['Terminé'] ?>,
+                            <?= $statusMap['Suspendu'] ?>
                         ],
                         backgroundColor: [
-                            'rgba(255, 127, 80, 0.2)',
+                            'rgba(108, 117, 125, 0.2)',
                             'rgba(8, 29, 217, 0.2)',
-                            'rgba(73, 76, 80, 0.2)'
+                            'rgba(40, 167, 69, 0.2)',
+                            'rgba(220, 53, 69, 0.2)'
                         ],
                         borderColor: [
-                            'rgba(255, 127, 80, 0.4)',
+                            'rgba(108, 117, 125, 0.4)',
                             'rgba(8, 29, 217, 0.4)',
-                            'rgba(73, 76, 80, 0.4)'
+                            'rgba(40, 167, 69, 0.4)',
+                            'rgba(220, 53, 69, 0.4)'
                         ],
                         borderWidth: 1
                     }]

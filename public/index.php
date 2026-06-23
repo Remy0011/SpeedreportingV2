@@ -8,6 +8,7 @@ use Src\Controller\AuthController;
 use Src\Controller\ClientController;
 use Src\Controller\DashboardController;
 use Src\Controller\ProjectController;
+use Src\Controller\PlanningController;
 use Src\Controller\UserController;
 use Src\Controller\UserPreferencesController;
 use Src\Controller\WorkController;
@@ -15,7 +16,26 @@ use Src\Core\EnvLoader;
 use Src\Services\ProfilePictureService;
 use Src\Services\RouterService;
 
+// Configuration sécurisée des cookies de session
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (int)($_SERVER['SERVER_PORT'] ?? 80) === 443;
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => $isHttps,
+    'httponly' => true,
+    'samesite' => 'Strict',
+]);
 session_start();
+
+// Headers de sécurité HTTP
+header('X-Frame-Options: DENY');
+header('X-Content-Type-Options: nosniff');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+if ($isHttps) {
+    header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+}
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/../src/Utils/functions.php';
 
@@ -34,8 +54,10 @@ if (getenv('APP_ENV') === 'dev') {
     // PRODUCTION
     error_reporting(0);
     ini_set('display_errors', '0');
-    ErrorKernel::register();
 }
+
+// Toujours enregistrer le gestionnaire d'exceptions pour afficher les pages d'erreur stylisées
+ErrorKernel::register();
 
 const USER = 2;
 const ADMIN = 1;
@@ -187,6 +209,14 @@ $router->addRoute('/update/clients', 'POST', function () {
 }, [ADMIN]);
 $router->addRoute('/delete/clients', 'POST', function () {
     (new ClientController())->deleteClient();
+}, [ADMIN]);
+
+// PLANNING PRÉVISIONNEL (ADMIN)
+$router->addRoute('/previsionnel', 'GET', function () {
+    (new PlanningController())->getIndex();
+}, [ADMIN]);
+$router->addRoute('/previsionnel', 'POST', function () {
+    (new PlanningController())->postPlanning();
 }, [ADMIN]);
 
 // PREFERENCES (USER, ADMIN)

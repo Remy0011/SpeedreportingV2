@@ -1,0 +1,175 @@
+/* Toolbar */
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background-color: var(--bg-light);
+    border: 1px solid var(--color-shadow);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px var(--color-shadow);
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+/* Bouton Créer */
+.toolbar #create-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    border: 1px solid var(--text-light);
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--t);
+    white-space: nowrap;
+}
+
+.toolbar #create-button:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+/* Barre de recherche */
+.toolbar .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background-color: var(--bg-light);
+    border: 1px solid var(--color-shadow);
+    border-radius: var(--radius-full);
+    color: var(--text-light);
+    transition: var(--t);
+    min-width: 160px;
+}
+
+.toolbar .search-bar:focus-within {
+    border-color: var(--color-primary);
+}
+
+.toolbar .search-bar input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.toolbar .search-bar .bx-x {
+    cursor: pointer;
+    color: var(--color-shadow);
+    transition: var(--t);
+}
+
+.toolbar .search-bar .bx-x:hover {
+    color: var(--status-danger);
+}
+
+/* Label Filtrer */
+.toolbar .filter-bar,
+.toolbar .filter-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-light);
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+/* Boutons de filtre */
+.toolbar .filter-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Compatible avec <button> et <a> */
+.toolbar .btn-filter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    border: 1px solid var(--color-shadow);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--t);
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+/* Les icônes héritent de la couleur du bouton */
+.toolbar .btn-filter i {
+    color: inherit;
+}
+
+/* Hover et état actif */
+.toolbar .btn-filter:hover,
+.toolbar .btn-filter.active {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background-color: var(--color-t);
+}
+
+/* Responsive tablette */
+@media (max-width: 768px) {
+    .toolbar {
+        gap: 8px;
+        padding: 10px 12px;
+        justify-content: flex-start;
+    }
+
+    .toolbar .filter-bar,
+    .toolbar .filter-label {
+        width: 100%;
+    }
+
+    .toolbar .filter-buttons {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .toolbar .btn-filter {
+        flex: 1;
+        justify-content: center;
+        min-width: 140px;
+    }
+}
+
+/* Responsive mobile */
+@media (max-width: 480px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar .search-bar {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .toolbar #create-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .toolbar .filter-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .toolbar .btn-filter {
+        width: 100%;
+        justify-content: center;
+    }
+}
