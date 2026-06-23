@@ -1,5 +1,7 @@
 .env
 .env.dev
+.idea/
+vendor/
 # Cypress
 node_modules/
 cypress/videos/

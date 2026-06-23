@@ -1,0 +1,14 @@
+{
+  "name": "speed-reporting",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Speed Reporting - End-to-end tests with Cypress",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "e2e": "cypress run --e2e"
+  },
+  "devDependencies": {
+    "cypress": "^15.17.0"
+  }
+}
