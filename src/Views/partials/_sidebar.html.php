@@ -62,6 +62,12 @@ $role = AuthService::getRole()->getId();
                                 <span class="text">Clients</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="/previsionnel">
+                                <i class='bx bx-trending-up'></i>
+                                <span class="text">Planning prévisionnel</span>
+                            </a>
+                        </li>
                     <?php endif; ?>
                     <?php if ($role == 2): ?>
                         <li>

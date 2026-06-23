@@ -21,7 +21,7 @@ class AuthService
 
     /**
      * Connecté l'utilisateur avec les identifiants fournis
-     * 
+     *
      * @param string $email
      * @param string $password
      * @return bool true si l'utilisateur est connecté, false sinon
@@ -32,6 +32,7 @@ class AuthService
 
         if ($user_row = $user_manager->authenticate($email, $password)) {
             $user = new User($user_row);
+            session_regenerate_id(true); // Prévient la fixation de session
             $_SESSION['user'] = [
                 'id' => $user->getId(),
                 'role' => $user->getRole(),
@@ -44,7 +45,7 @@ class AuthService
 
     /**
      * Deconnecte l'utilisateur connecté
-     * 
+     *
      * @return void
      */
     public function logout(): void
@@ -56,7 +57,7 @@ class AuthService
 
     /**
      * Retourne l'utilisateur connecté
-     * 
+     *
      * @return User|null L'objet User de l'utilisateur connecté ou null si l'utilisateur n'est pas connecté
      */
     public static function getUser(): ?User
@@ -64,15 +65,15 @@ class AuthService
         if (!isset($_SESSION['user']['id'])) {
             return null;
         }
-     
+
         $user_manager = new UserManager();
         $user_row = $user_manager->find($_SESSION['user']['id'], ['user_id', 'user_email','user_firstname','user_lastname', 'user_picture','user_role']);
         return new User($user_row);
     }
-    
+
     /**
      * Retourne le rôle de l'utilisateur connecté
-     * 
+     *
      * @return Role|null L'objet Role de l'utilisateur connecté ou null si l'utilisateur n'est pas connecté
      */
     public static function getRole(): ?Role
@@ -80,7 +81,7 @@ class AuthService
         if (!isset($_SESSION['user']['role'])) {
             return null;
         }
-        
+
         $role_manager = new RoleManager();
         $role_row = $role_manager->find($_SESSION['user']['role']);
 
@@ -89,7 +90,7 @@ class AuthService
 
     /**
      * Vérifie si l'utilisateur est connecté
-     * 
+     *
      * @return bool true si l'utilisateur est connecté, false sinon
      */
     public static function isAuthenticated(): bool

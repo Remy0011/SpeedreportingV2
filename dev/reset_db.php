@@ -1,3 +1,4 @@
+php ./dev/reset_db.php
 <?php
 
 use Src\Core\EnvLoader;

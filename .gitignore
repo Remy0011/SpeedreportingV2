@@ -1,6 +1,7 @@
 .env
 .env.dev
+# Cypress
 node_modules/
-cypress/screenshots/
 cypress/videos/
+cypress/screenshots/
 cypress/downloads/
