@@ -130,7 +130,7 @@ use Src\Services\CsrfService;
                                 <div class="input-container">
                                     <label for="work_count_<?= $day['date']; ?>">Heures prévues :</label>
                                     <input type="number" id="work_count_<?= $day['date']; ?>" name="work_count"
-                                           min="0.5" step="0.5" required>
+                                           min="0.5" max="7" step="0.5" required>
                                 </div>
                             </div>
                             <?php CsrfService::insertToken(); ?>
@@ -166,7 +166,7 @@ use Src\Services\CsrfService;
                                     <div class="input-container">
                                         <label for="work_count_edit_<?= $workId; ?>">Heures prévues :</label>
                                         <input type="number" id="work_count_edit_<?= $workId; ?>" name="work_count"
-                                               min="0.5" step="0.5" value="<?= $work->getCount(raw: true); ?>" required>
+                                               min="0.5" max="7" step="0.5" value="<?= $work->getCount(raw: true); ?>" required>
                                     </div>
                                 </div>
                                 <?php CsrfService::insertToken(); ?>

@@ -128,11 +128,12 @@ class PlanningController extends BaseController
                 }
 
                 $work_date = new DateTimeImmutable($_POST['work_date']);
+                $work_count = $this->getValidPlanningWorkCount($_POST['work_count']);
 
                 $work = new Work($_POST);
                 $work->setUser((int) $_POST['work_user']);
                 $work->setProject((int) $_POST['work_project']);
-                $work->setCount((float) $_POST['work_count']);
+                $work->setCount($work_count);
                 $work->setStatus(WorkStatus::CONFIRME);
                 $work->setYear((int) $work_date->format('o'));
                 $work->setWeek((int) $work_date->format('W'));
@@ -154,7 +155,7 @@ class PlanningController extends BaseController
                 $work = new Work($work_raw);
 
                 if (isset($_POST['work_count']) && $_POST['work_count'] !== '') {
-                    $work->setCount((float) $_POST['work_count']);
+                    $work->setCount($this->getValidPlanningWorkCount($_POST['work_count']));
                 }
                 if (isset($_POST['work_description'])) {
                     $work->setDescription($_POST['work_description']);
@@ -266,6 +267,20 @@ class PlanningController extends BaseController
         }
 
         return [$planning_data, $planning_data_by_project];
+    }
+
+    private function getValidPlanningWorkCount(mixed $workCount): float
+    {
+        if (!is_numeric($workCount)) {
+            ErrorKernel::throwHttpError(400, "Le nombre d'heures doit être numérique.");
+        }
+
+        $workCount = (float) $workCount;
+        if ($workCount < 0.5 || $workCount > 7) {
+            ErrorKernel::throwHttpError(400, "Le nombre d'heures doit être compris entre 0,5 et 7.");
+        }
+
+        return $workCount;
     }
 
     private function getSelectedWeek(array $weeks): array

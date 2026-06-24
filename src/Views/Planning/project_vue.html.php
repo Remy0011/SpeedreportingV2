@@ -200,7 +200,7 @@ $current_view = htmlspecialchars($view ?? 'projects', ENT_QUOTES);
                                         <input type="number"
                                                name="work_count"
                                                id="work_count_<?= $workId ?>"
-                                               min="0.5" step="0.5"
+                                               min="0.5" max="7" step="0.5"
                                                value="<?= $entry->getCount(raw: true) ?>" required>
                                     </div>
                                 </div>
@@ -268,7 +268,7 @@ $current_view = htmlspecialchars($view ?? 'projects', ENT_QUOTES);
                                         <input type="number"
                                                name="work_count"
                                                id="work_count_<?= $project->getId() ?>_<?= $day['date'] ?>"
-                                               min="0.5" step="0.5" required>
+                                               min="0.5" max="7" step="0.5" required>
                                     </div>
                                 </div>
                                 <?php \Src\Services\CsrfService::insertToken(); ?>
